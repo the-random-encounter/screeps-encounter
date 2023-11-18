@@ -93,17 +93,17 @@ const roleCollector = {
 								creep.moveTo(droppedPiles[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 						} // end of (if there are dropped piles)
 						else { // NO DROPPED PILES, NEED TO FIND OTHER SOURCES OF ENERGY...
-							if (creep.room.memory.objects.storage && creep.room.memory.objects.storage[0]) { // IF RCL IS OVER 3 AND WE HAVE A STORAGE
+							if (creep.room.storage) { // IF RCL IS OVER 3 AND WE HAVE A STORAGE
 
 								if (!creep.memory.pickup) // MAKE THE STORAGE MY PICKUP TARGET AND GET ENERGY
-									creep.memory.pickup = creep.room.memory.objects.storage[0];
+									creep.memory.pickup = creep.room.storage.id;
 
-								const storage = Game.getObjectById(creep.memory.pickup);
+								const storage = creep.room.storage;
 
 								if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
 									creep.moveTo(storage, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 							} // end of (RCL > 3 & storage is built)
-							else if (creep.room.controller.level <= 3) { // IF RCL IS 3 OR LESS (AND THUS NO STORAGE)
+							else { // IF RCL IS 3 OR LESS (AND THUS NO STORAGE)
 								
 								if (!creep.memory.pickup) {// IF NO PICKUP TARGET IS SET, REQUEST A LOGISTICAL PAIR
 									const outboxesIDs = creep.room.memory.settings.containerSettings.outboxes;
@@ -114,7 +114,7 @@ const roleCollector = {
 									}
 									outboxes = outboxes.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
 									creep.memory.pickup = outboxes[0].id;
-								} else if (creep.memory.pickup == 'none') { // IF NO PAIRS ARE AVAILABLE, SEE IF THERE ARE SOURCE CONTAINERS BUILT
+								/*} else if (creep.memory.pickup == 'none') { // IF NO PAIRS ARE AVAILABLE, SEE IF THERE ARE SOURCE CONTAINERS BUILT
 									const sources = creep.room.find(FIND_SOURCES);
 									let sourceBoxes = [];
 									for (let i = 0; i < sources.length; i++) {
@@ -127,16 +127,17 @@ const roleCollector = {
 
 									ROOM_HEAP.outboxCounter++;
 									if (ROOM_HEAP.outboxCounter >= sourceBoxes.length)
-										ROOM_HEAP.outboxCounter = 0;
-								} else {
-									const target = Game.getObjectById(creep.memory.pickup)
+										ROOM_HEAP.outboxCounter = 0;*/
+								} //else {
+								
+								const target = Game.getObjectById(creep.memory.pickup)
 
-									if (creep.withdraw(target) === ERR_NOT_IN_RANGE) {
-										creep.moveTo(target, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
-									}
+								if (creep.withdraw(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+									creep.moveTo(target, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 								}
+								//}
 
-								if (creep.memory.dropoff == 'none') { // IF NO PAIRS ARE AVAILABLE, SEE IF THERE IS A CONTROLLER UPGRADE BOX BUILT
+								/*if (creep.memory.dropoff == 'none') { // IF NO PAIRS ARE AVAILABLE, SEE IF THERE IS A CONTROLLER UPGRADE BOX BUILT
 									const controllerBox = creep.room.controller.pos.findInRange(FIND_STRUCTURES, 5, { filter: { structureType: STRUCTURE_CONTAINER } });
 									if (controllerBox)
 										creep.memory.dropoff = controllerBox[0].id;
@@ -146,14 +147,14 @@ const roleCollector = {
 									const target = Game.getObjectById(creep.memory.pickup);
 									if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
 										creep.moveTo(target, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
-								}	
+								}	*/
 							} // end of (energy directives when RCL < 4)
 						} // end of (no piles, find main energy)
 					} // end of (finding energy directives)
 					else { // IF MY STORE IS FULL OF ENERGY...
 						const targets = creep.room.find(FIND_STRUCTURES, { filter: (i) => ((i.structureType == STRUCTURE_SPAWN || i.structureType == STRUCTURE_EXTENSION) && i.store.getFreeCapacity(RESOURCE_ENERGY) > 0) });
 
-						if (targets.length) { // FIND SPAWNS & EXTENSIONS THAT NEED TO  BE FILLED
+						if (targets.length > 0) { // FIND SPAWNS & EXTENSIONS THAT NEED TO  BE FILLED
 
 							const target = creep.pos.findClosestByRange(targets);
 							
@@ -163,14 +164,14 @@ const roleCollector = {
 						else { // NO SPAWNS/EXTENSIONS NEED FILLING, WHAT ABOUT TOWERS...?
 							//let towers = creep.room.find(FIND_STRUCTURES, { filter: (i) => (i.structureType == STRUCTURE_TOWER && i.store[RESOURCE_ENERGY] <= 800) });
 							//towers.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]); 
-							const tower = creep.pos.findClosestByRange(FIND_STRUCTURES, { filter: (i) => i.structureType == STRUCTURE_TOWER && (i.store[RESOURCE_ENERGY] <= 800)})
+							const tower = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, { filter: (i) => i.structureType == STRUCTURE_TOWER && (i.store[RESOURCE_ENERGY] <= 800)})
 							//if (towers.length > 0) { // THERE ARE TOWERS TO FILL, SO...
 							//const towerTarget = creep.pos.findClosestByRange(towers);
 								
 							if (tower) { // HEAD TO CLOSEST NON-FULL TOWER AND FILL IT
 								if (creep.transfer(tower, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
 									creep.moveTo(tower, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
-							} else { // TOWERS FULL UP
+							}/* else { // TOWERS FULL UP
 								if (creep.room.controller && creep.room.controller.level > 3 && creep.room.memory.objects.storage[0]) { // NOTHING LEFT, RETURN ENERGY TO STORAGE
 									const storage = Game.getObjectById(creep.room.memory.objects.storage[0]);
 									if (creep.transfer(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
@@ -188,7 +189,9 @@ const roleCollector = {
 											creep.moveTo(storage, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } })
 									}
 								} // end of (no other directives, empty inventory)
-							} // end of (refilling tower energy directive)
+							} // end of (refilling tower energy directive)*/
+
+							
 						} // end of (if no spawns/extensions to fill)
 					} // end of (if creep's store is full)
 				} // end of (no invaders to loot, main logic chain)

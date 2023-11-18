@@ -1,5 +1,5 @@
 // Will find room positions of creeps and organize them into an array
-RoomPosition.prototype.getNearbyPositions = function getNearbyPositions() {
+RoomPosition.prototype.getNearbyPositions = function() {
 	var positions = [];
 
 	let startX = this.x - 1 || 1;
@@ -19,7 +19,7 @@ RoomPosition.prototype.getNearbyPositions = function getNearbyPositions() {
 	return positions;
 }
 
-RoomPosition.prototype.getOpenPositions = function getOpenPositions() {
+RoomPosition.prototype.getOpenPositions = function() {
 	let nearbyPositions = this.getNearbyPositions();
 
 	const terrain = Game.map.getRoomTerrain(this.roomName);

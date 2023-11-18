@@ -1,4 +1,4 @@
-Creep.prototype.findEnergySource = function findEnergySource() {
+Creep.prototype.findEnergySource = function() {
 	
 	let sources = this.room.find(FIND_SOURCES);
 			
@@ -22,7 +22,7 @@ Creep.prototype.findEnergySource = function findEnergySource() {
 	}
 }
 
-Creep.prototype.assignHarvestSource = function assignHarvestSource(noIncrement) {
+Creep.prototype.assignHarvestSource = function(noIncrement) {
 
 	const room = this.room;
 	const creep = this;
@@ -77,7 +77,7 @@ Creep.prototype.assignHarvestSource = function assignHarvestSource(noIncrement) 
 
 }
 
-Creep.prototype.assignRemoteHarvestSource = function assignRemoteHarvestSource(roomName, noIncrement = false) {
+Creep.prototype.assignRemoteHarvestSource = function(roomName, noIncrement = false) {
 	const room = Memory.rooms[roomName];
 
 	console.log(roomName);
@@ -122,7 +122,7 @@ Creep.prototype.assignRemoteHarvestSource = function assignRemoteHarvestSource(r
 
 }
 
-Creep.prototype.unloadEnergy = function unloadEnergy() {
+Creep.prototype.unloadEnergy = function() {
 
 	if (this.spawning)
 		return;
@@ -175,7 +175,7 @@ Creep.prototype.unloadEnergy = function unloadEnergy() {
 	}
 }
 
-Creep.prototype.harvestEnergy = function harvestEnergy() {
+Creep.prototype.harvestEnergy = function() {
 	let storedSource = Game.getObjectById(this.memory.source);
 
 	if (!storedSource) {
@@ -210,7 +210,7 @@ Creep.prototype.harvestEnergy = function harvestEnergy() {
 	}
 }
 
-Creep.prototype.getDroppedResource = function getDroppedResource(pileID) {
+Creep.prototype.getDroppedResource = function(pileID) {
 
 	if (pileID === undefined)
 		pileID = this.pos.findClosestByRange(FIND_DROPPED_RESOURCES).id;
@@ -224,7 +224,7 @@ Creep.prototype.getDroppedResource = function getDroppedResource(pileID) {
 	}
 }
 
-Creep.prototype.pickupClosestEnergy = function pickupClosestEnergy() {
+Creep.prototype.pickupClosestEnergy = function() {
 	
 	const containersWithEnergy = this.room.find(FIND_STRUCTURES, {
 		filter: (obj) => (obj.structureType == STRUCTURE_CONTAINER || obj.structureType == STRUCTURE_STORAGE) && obj.store[RESOURCE_ENERGY] > 0
@@ -241,7 +241,7 @@ Creep.prototype.pickupClosestEnergy = function pickupClosestEnergy() {
 	}
 }
 
-Creep.prototype.unloadMineral = function unloadMineral() {
+Creep.prototype.unloadMineral = function() {
 
 	const mineral = Object.keys(this.store).toString();
 	
@@ -265,7 +265,7 @@ Creep.prototype.unloadMineral = function unloadMineral() {
 	}
 }
 
-Creep.prototype.harvestMineral = function harvestMineral() {
+Creep.prototype.harvestMineral = function() {
 	
 	let storedMineral = Game.getObjectById(this.memory.mineral);
 
@@ -287,13 +287,13 @@ Creep.prototype.harvestMineral = function harvestMineral() {
 	}
 }
 
-Creep.prototype.moveBySerializedPath = function moveBySerializedPath(serializedPath) {
+Creep.prototype.moveBySerializedPath = function(serializedPath) {
 
 	const path = Room.deserializePath(serializedPath);
 	this.moveByPath(path);
 }
 
-Creep.prototype.recursivePathMove = function recursivePathMove(serializedPath, stepNum = 0) {
+Creep.prototype.recursivePathMove = function(serializedPath, stepNum = 0) {
 
 	const path = Room.deserializePath(serializedPath);
 
@@ -304,17 +304,17 @@ Creep.prototype.recursivePathMove = function recursivePathMove(serializedPath, s
 		return recursivePathMove(serializedPath, stepNum);
 }
 
-Creep.prototype.disable = function disable() {
+Creep.prototype.disable = function() {
 	this.memory.disableAI = true;
 	return true;
 }
 
-Creep.prototype.enable = function enable() {
+Creep.prototype.enable = function() {
 	this.memory.disableAI = false;
 	return false;
 }
 
-Creep.prototype.getBoost = function getBoost(compound = false, sourceLab = false, numParts = 1) {
+Creep.prototype.getBoost = function(compound = false, sourceLab = false, numParts = 1) {
 	if (compound) {
 		if (sourceLab) {
 			if (typeof sourceLab === 'string')
@@ -328,7 +328,7 @@ Creep.prototype.getBoost = function getBoost(compound = false, sourceLab = false
 	}
 }
 
-Creep.prototype.assignOutbox = function assignOutbox(noIncrement) {
+Creep.prototype.assignOutbox = function(noIncrement) {
 
 	const room = this.room;
 	const LA = room.memory.settings.containerSettings.lastOutbox;
@@ -369,7 +369,7 @@ Creep.prototype.assignOutbox = function assignOutbox(noIncrement) {
 
 }
 
-Creep.prototype.assignInbox = function assignInbox(noIncrement) {
+Creep.prototype.assignInbox = function(noIncrement) {
 
 	const room = this.room;
 	const LA = room.memory.settings.containerSettings.lastInbox;
@@ -410,7 +410,7 @@ Creep.prototype.assignInbox = function assignInbox(noIncrement) {
 
 }
 
-Creep.prototype.assignLogisticalPair = function assignLogisticalPair(source = false, destination = false) {
+Creep.prototype.assignLogisticalPair = function(source = false, destination = false) {
 	if ((source && !destination) || (!source && destination))
 		return 'If including parameters, you must specify both the source AND destination.';
 

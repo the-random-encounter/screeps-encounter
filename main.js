@@ -6,65 +6,36 @@ const roleUpgrader 	= require('role.upgrader');
 const roleBuilder 	= require('role.builder');
 const roleCollector = require('role.collector');
 const roleRepairer 	= require('role.repairer');
-const roleRunner 	= require('role.runner');
-const roleCrane 	= require('role.crane');
-const roleMiner 	= require('role.miner');
+const roleRunner 		= require('role.runner');
+const roleCrane 		= require('role.crane');
+const roleMiner 		= require('role.miner');
 const roleScientist = require('role.scientist');
 
-const roleRanger 	= require('role.ranger'	);
+const roleRanger 		= require('role.ranger'	);
 const roleWarrior 	= require('role.warrior');
-const roleHealer 	= require('role.healer'	);
+const roleHealer 		= require('role.healer'	);
 
 const roleProvider 	= require('role.provider');
 const roleRebooter 	= require('role.rebooter');
 
-
-const roleClaimer 			= require('role.claimer');
-const roleScout 			= require('role.scout');
-const roleRemoteHarvester 	= require('role.remoteHarvester');
-const roleRemoteRunner 		= require('role.remoteRunner');
+const roleRemoteHarvester = require('role.remoteHarvester');
 const roleRemoteBuilder 	= require('role.remoteBuilder');
+const roleRemoteRunner 		= require('role.remoteRunner');
 const roleRemoteGuard 		= require('role.remoteGuard');
-const roleReserver 			= require('role.reserver');
+const roleReserver 				= require('role.reserver');
+const roleClaimer 				= require('role.claimer');
+const roleScout 					= require('role.scout');
 
 // require other modules
-require('roomDefense'		);
+require('roomDefense'			);
 require('miscFunctions'		);
 require('marketFunctions'	);
 
 // require prototype extension modules
-require('creepFunctions'		);
-require('roomFunctions'			);
+require('creepFunctions'				);
+require('roomFunctions'					);
 require('roomPositionFunctions'	);
 
-/*class Colony {
-
-	id = HEAP_MEMORY.numColonies + 1;
-	room = '';
-	outposts = [];
-
-	constructor(id, room, level, outposts) {
-		this.id = id;
-		this.room = room;
-		this.level = level;
-		this.outposts = outposts;
-	}
-
-	designateOutpost(roomName, colonyRoom) {
-		newOutpost = new Outpost(id + 0.1, roomName, colonyRoom);
-		outposts.push(newOutpost);	
-	}
-}
-
-class Outpost {
-	constructor(id, room, parent) {
-		this.id = id;
-		this.room = room;
-		this.parent = parent;
-	}
-
-
-}*/
 
 class ROOM_HEAP_MEMORY {
 
@@ -90,57 +61,55 @@ global.HEAP_MEMORY = {
 	'towerLRT': ""
 };
 
-global.manualCmdQueue = [];
-
 // define pre-configured creep bodypart arrays as key/value pairs in an object
 const spawnVariants = {
 	'harvester200':		[ WORK, CARRY, MOVE	],
 	'harvester300':  	[	WORK, WORK,	CARRY, MOVE	],
 	'harvester400':  	[	WORK, WORK,	WORK, CARRY, MOVE	],
-	'harvester500': 	[	WORK, WORK,	WORK, CARRY, CARRY, MOVE, MOVE	],
-	'harvester800': 	[	WORK, WORK,	WORK,	WORK, WORK, WORK, CARRY, CARRY, MOVE	],
+	'harvester500': 	[	WORK, WORK,	WORK, CARRY, CARRY, MOVE, MOVE ],
+	'harvester800': 	[	WORK, WORK,	WORK,	WORK, WORK, WORK, CARRY, CARRY, MOVE ],
 	'harvester1000': 	[	WORK, WORK,	WORK,	WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE	],
 	'collector100': 	[	CARRY, MOVE	],
 	'collector300': 	[	CARRY, CARRY, CARRY, MOVE, MOVE, MOVE	],
 	'collector500':  	[	CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE	],
-	'collector800':  	[	CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE	],
+	'collector800':  	[	CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE ],
 	'collector1000': 	[	CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE,MOVE, MOVE, MOVE	],
 	'upgrader300': 		[ WORK, WORK, CARRY, MOVE ],
 	'upgrader400': 		[ WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE ],
 	'upgrader500': 		[	WORK, WORK, WORK, WORK, CARRY, MOVE	],
 	'upgrader550': 		[	WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE	],
 	'upgrader800':   	[	WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE	],
-	'upgrader1000':  	[	WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE	],
+	'upgrader1000':  	[	WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE ],
 	'builder300': 		[ WORK, CARRY, CARRY, MOVE, MOVE ],
 	'builder350': 		[ WORK, CARRY, CARRY, MOVE, MOVE, MOVE ],
-	'builder500':  	 	[	WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE	],
+	'builder500':  	 	[	WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE ],
 	'builder800':  	 	[	WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE	],
 	'builder1000': 		[	WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE	],
 	'builder1600': 		[	WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE	],
 	'repairer300':   	[	WORK, WORK, CARRY, MOVE	],
-	'repairer500':   	[	WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE	],
-	'repairer800':   	[	WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE	],
-	'repairer1000':  	[	WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE	],
-	'repairer1400': 	[	WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE	],
-	'runner300': 			[	MOVE, MOVE, CARRY, CARRY, CARRY, CARRY	],
+	'repairer500':   	[	WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE ],
+	'repairer800':   	[	WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE ],
+	'repairer1000':  	[	WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE ],
+	'repairer1400': 	[	WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE ],
+	'runner300': 			[	MOVE, MOVE, CARRY, CARRY, CARRY, CARRY ],
 	'runner500': 			[	MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY	],
 	'runner800': 			[	MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY ],
 	'warrior520': 		[ MOVE, MOVE, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, ATTACK, ATTACK, ATTACK ],
 	'crane300': 			[ CARRY, CARRY, CARRY, CARRY, MOVE, MOVE ],
 	'crane500': 			[	CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE	],
-	'crane800': 			[	CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE	]
+	'crane800': 			[	CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE ]
 }
 
 // define working variant set for use in the main loop, assigned based on current energy capacity limits
 let availableVariants = {
-	'harvester': [],
-	'collector': [],
-	'upgrader': [],
-	'builder': [],
-	'repairer': [],
-	'runner': [],
-	'warrior': [],
-	'crane': [],
+	'harvester': 	[],
+	'collector': 	[],
+	'upgrader': 	[],
+	'builder': 		[],
+	'repairer': 	[],
+	'runner': 		[],
+	'warrior': 		[],
+	'crane': 			[],
 	'remoteGuard': [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]
 }
 
@@ -178,16 +147,12 @@ let remoteHarvesterDying 	= false;
 let remoteGuardDying 			= false;
 let minerDying 						= false;
 
-/* #region MAIN LOOP, ENTIRE FUNCTION */
 module.exports.loop = function () {
-	/* #region  MAIN LOOP, ONCE EACH TICK SECTION */
 	// This is code to run in the main loop, just once each tick
 
 	if (Memory.colonies === undefined) Memory.colonies = {};
 	if (Memory.colonies.colonyList === undefined) Memory.colonies.colonyList = [];
 	
-	if (manualCmdQueue.length) manualCmdQueue.shift()();
-
 	calcTickTime();
 	
 	// Generate pixels with extra CPU time
@@ -198,7 +163,6 @@ module.exports.loop = function () {
 		}
 	}
 
-	/* #region CREEP MEMORY GARBAGE COLLECTION */
 	for (let name in Memory.creeps) {
 		if (!Game.creeps[name]) {
 			const role = Memory.creeps[name].role;
@@ -260,9 +224,7 @@ module.exports.loop = function () {
 			}
 		}
 	}
-	/* #endregion */
 	
-	/* #region  MAIN LOOP, ONCE FOR EVERY ROOM SECTION */
 	// main code loop to run inside each room containing our units/structures
 	_.forEach(Game.rooms, function (room) {
 		
@@ -276,7 +238,6 @@ module.exports.loop = function () {
 			room.initFlags();
 		}
 		
-		/* #region  EACH ROOM LOOP, FOR OWNED ROOMS */
 		// code to run if room contains a controller owned by us
 		if (room && room.controller && room.controller.my) {
 			
@@ -286,9 +247,9 @@ module.exports.loop = function () {
 			const flags 		= room.memory.settings.flags;
 			const colonies 	= Memory.colonies;
 
-			if (tickCount == 1000) {
+			if (tickCount > 0 && tickCount % 1000 == 0) {
 				console.log('MAIN LOOP, CACHING OBJECTS EVERY 1000 TICKS --- Tick#: ' + tickCount);
-				//room.cacheObjects();
+				room.cacheObjects();
 				tickCount = 0;
 			}
 
@@ -326,10 +287,10 @@ module.exports.loop = function () {
 
 			const roomName = room.name;
 
-			if (room.memory.objects === undefined)							room.cacheObjects();
-			if (!room.memory.settings) 						room.initSettings();
-			if (!room.memory.settings.flags)			room.initFlags();
-			if (!room.memory.targets)							room.initTargets();
+			if (room.memory.objects === undefined)	room.cacheObjects();
+			if (!room.memory.settings) 							room.initSettings();
+			if (!room.memory.settings.flags)				room.initFlags();
+			if (!room.memory.targets)								room.initTargets();
 
 			const spawn = Game.getObjectById(room.memory.objects.spawns[0]);
 			
@@ -443,9 +404,6 @@ module.exports.loop = function () {
 			let remoteGuards 			= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'remoteguard' 		&& creep.memory.homeRoom == roomName);
 
 			let sites = room.find(FIND_CONSTRUCTION_SITES);
-			//let westSites = Game.rooms.E57S51.find(FIND_CONSTRUCTION_SITES);
-			//	let northSites = Game.rooms.E59S48.find(FIND_CONSTRUCTION_SITES);
-			/* #endregion */
 
 			// Select a non-geriatric collector to loot compounds or energy from enemy corpses
 			if (room.find(FIND_HOSTILE_CREEPS).length) {
@@ -460,12 +418,12 @@ module.exports.loop = function () {
 				}
 			}
 			
-			/* #region  CONSOLE LOG - SPAWN INFO */
+			// CONSOLE SPAWN INFO
 			if (tickCount % 10) {
 				console.log('H:' + harvesters.length + '(' + harvesterTarget + ') | C:' + collectors.length + '(' + collectorTarget + ') | U:' + upgraders.length + '(' + upgraderTarget + ')| B:' + builders.length + '(' + builderTarget + ') | Rn:' + runners.length + '(' + runnerTarget + ') | Rp:' + repairers.length + '(' + repairerTarget + ') | Cn:' + cranes.length + '(' + craneTarget + ') | Rb:' + rebooters.length + '(' + rebooterTarget + ') | Rv:' + reservers.length + '(' + reserverTarget + ') || Rng:' + rangers.length + '(' + rangerTarget + ') | War:' + warriors.length + '(' + warriorTarget + ') | Hlr:' + healers.length + '(' + healerTarget + ') || RH:' + remoteHarvesters.length + '(' + remoteHarvesterTarget + ') | RR:' + remoteRunners.length + '(' + remoteRunnerTarget + ') | RB:' + remoteBuilders.length + '(' + remoteBuilderTarget + ') | RG:' + remoteGuards.length + '(' + remoteGuardTarget + ') || Energy: ' + room.energyAvailable + '(' + room.energyCapacityAvailable + ')');
 			}
-			/* #endregion */
-			/* #region  ROOM VISUAL - SPAWN INFO */
+
+			// ROOM VISUAL - SPAWN INFO
 			if (room.memory.settings.visualSettings.spawnInfo === undefined)
 				room.initSettings();
 			const alignment = room.memory.settings.visualSettings.spawnInfo.alignment;
@@ -474,7 +432,7 @@ module.exports.loop = function () {
 			let spawnX = 49;
 			if (alignment == 'left')
 				spawnX = 0;
-			/* #region BOTTOM RIGHT CORNER */
+			// BOTTOM RIGHT CORNER
 			room.visual.rect(39.75, 44.25, 9.5, 5, { fill: '#555555', stroke: '#aaaaaa', opacity: 0.3, strokeWidth: 0.2 })
 			// Harvesters, Collectors, Upgraders, Builders, Cranes
 			room.visual.text('H:' + harvesters.length + '(' + harvesterTarget + ') | C:' + collectors.length + '(' + collectorTarget + ') | U:' + upgraders.length + '(' + upgraderTarget + ') | B:' + builders.length + '(' + builderTarget + ') | Cn:' + cranes.length + '(' + craneTarget + ')', spawnX, 49, { align: alignment, color: spawnColor, font: spawnFont });
@@ -486,8 +444,8 @@ module.exports.loop = function () {
 			room.visual.text('Rng:' + rangers.length + '(' + rangerTarget + ') | War:' + warriors.length + '(' + warriorTarget + ') | Hlr:' + healers.length + '(' + healerTarget + ')', spawnX, 46, { align: alignment, color: spawnColor, font: spawnFont });
 			// Energy Available, Energy Capacity
 			room.visual.text('Energy: ' + room.energyAvailable + '(' + room.energyCapacityAvailable + ')', spawnX, 45, { align: alignment, color: spawnColor, font: spawnFont });
-			/* #endregion */
-			/* #region TOP RIGHT CORNER */
+
+			// TOP RIGHT CORNER
 			room.visual.rect(39.75, -0.25, 9.5, 5, { fill: '#555555', stroke: '#aaaaaa', opacity: 0.3, strokeWidth: 0.2 })
 			// Harvesters, Collectors, Upgraders, Builders, Cranes
 			room.visual.text('H:' + harvesters.length + '(' + harvesterTarget + ') | C:' + collectors.length + '(' + collectorTarget + ') | U:' + upgraders.length + '(' + upgraderTarget + ') | B:' + builders.length + '(' + builderTarget + ') | Cn:' + cranes.length + '(' + craneTarget + ')', spawnX, 0.5, { align: alignment, color: spawnColor, font: spawnFont });
@@ -499,9 +457,8 @@ module.exports.loop = function () {
 			room.visual.text('Rng:' + rangers.length + '(' + rangerTarget + ') | War:' + warriors.length + '(' + warriorTarget + ') | Hlr:' + healers.length + '(' + healerTarget + ')', spawnX, 3.5, { align: alignment, color: spawnColor, font: spawnFont });
 			// Energy Available, Energy Capacity
 			room.visual.text('Energy: ' + room.energyAvailable + '(' + room.energyCapacityAvailable + ')', spawnX, 4.5, { align: alignment, color: spawnColor, font: spawnFont });
-			/* #endregion */
-			/* #endregion */
-			/* #region  ROOM VISUAL - ROOM FLAGS */
+
+			// ROOM VISUAL - ROOM FLAGS
 			const xCoord = room.memory.settings.visualSettings.roomFlags.displayCoords[0];
 			const yCoord = room.memory.settings.visualSettings.roomFlags.displayCoords[1];
 			const displayColor = room.memory.settings.visualSettings.roomFlags.color;
@@ -509,8 +466,6 @@ module.exports.loop = function () {
 			room.visual.rect(xCoord - 0.15, yCoord - 1.2, 13, 1.35, { fill: '#770000', stroke: '#aa0000', opacity: 0.3, strokeWidth: 0.1 })
 			room.visual.text('[' + room.name + ']:  CU(' + room.memory.settings.flags.craneUpgrades + ')  CSL(' + room.memory.settings.flags.centralStorageLogic + ')   RDM(' + room.memory.settings.flags.runnersDoMinerals + ')   RDP(' + room.memory.settings.flags.runnersDoPiles + ')   HFA(' + room.memory.settings.flags.harvestersFixAdjacent + ')', xCoord, (yCoord - 0.6), { align: 'left', font: fontSize, color: displayColor });
 			room.visual.text('[' + room.name + ']:   RB(' + room.memory.settings.flags.repairBasics + ')   RR(' + room.memory.settings.flags.repairRamparts + ')    RW(' + room.memory.settings.flags.repairWalls + ')   TRB(' + room.memory.settings.flags.towerRepairBasic + ')   TRD(' + room.memory.settings.flags.towerRepairDefenses + ')', xCoord, yCoord - 0.1, { align: 'left', font: fontSize, color: displayColor });
-
-			/* #endregion */
 
 			let creepCount = 0;
 
@@ -522,7 +477,6 @@ module.exports.loop = function () {
 			else
 				capacity = room.energyCapacityAvailable;
 
-			/* #region  AVAILABLE VARIANTS ASSIGNMENTS */
 			if (room.energyCapacityAvailable == 300) {
 				availableVariants.harvester 	= spawnVariants.harvester300;
 				availableVariants.collector 	= spawnVariants.collector100;
@@ -583,7 +537,6 @@ module.exports.loop = function () {
 			}
 			if (room.memory.settings.flags.craneUpgrades == true) availableVariants.crane = spawnVariants.crane800;
 			if (Game.shard.ptr) availableVariants.builder = spawnVariants.builder300;
-			/* #endregion */
 			
 			// if we have no collectors, and our energy supply is not enough for a 500 energy spawn, do a 300.
 			if (!collectors.length) {
@@ -606,7 +559,7 @@ module.exports.loop = function () {
 				}
 			}
 
-			/* #region  LOGIC TO ALLOW FOR PRE-SPAWNING HARVESTERS/REMOTE HARVESTERS/RESERVERS */
+			// LOGIC TO ALLOW FOR PRE-SPAWNING HARVESTERS/REMOTE HARVESTERS/RESERVERS
 			
 			for (i = 0; i < harvesters.length; i++) {
 				harvesterDying = false;
@@ -663,9 +616,8 @@ module.exports.loop = function () {
 					break;
 				}
 			}
-			/* #endregion */
 			
-			/* #region  SPAWN MANAGEMENT SYSTEM */
+			// SPAWN MANAGEMENT SYSTEM
 			let readySpawn = spawn;
 
 			for (let i = 0; i < room.memory.objects.spawns.length; i++) {
@@ -740,10 +692,7 @@ module.exports.loop = function () {
 						}
 					} else if ((reservers.length < reserverTarget) || (reservers.length <= reserverTarget && reserverDying && reserverTarget !== 0)) {
 						newName = 'Rv' + (reservers.length + 1);
-						let result = readySpawn.spawnCreep([MOVE, MOVE, CLAIM, CLAIM], newName, { memory: { role: 'reserver', roleForQuota: 'reserver', homeRoom: roomName } });
-						console.log(result);
-						while (result == ERR_NAME_EXISTS) {
-						//while (readySpawn.spawnCreep([MOVE, MOVE, CLAIM, CLAIM], newName, { memory: { role: 'reserver', roleForQuota: 'reserver', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
+						while (readySpawn.spawnCreep([MOVE, MOVE, CLAIM, CLAIM], newName, { memory: { role: 'reserver', roleForQuota: 'reserver', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 							newName = 'Rv' + (reservers.length + 1 + reserverCount);
 							reserverCount++;
 						}
@@ -799,10 +748,8 @@ module.exports.loop = function () {
 							}
 						}
 					}
-				}
-				
+				}	
 			}
-			/* #endregion */
 
 			// Display creep spawning information next to spawn
 			for (let i = 0; i < room.memory.objects.spawns.length; i++) {
@@ -817,7 +764,7 @@ module.exports.loop = function () {
 						console.log('[' + room.name + ' ' + spawnObjects[i].name + ']: Spawning new creep: ' + spawningCreep.memory.role + ' (' + spawningCreep.name + ')');
 						spawnAnnounced = true;
 					}
-					spawnObjects[i].room.visual.text('     ' + spawningCreep.memory.role + ' - ' + spawnObjects[i].spawning.remainingTime + '/' + spawnObjects[i].spawning.needTime, spawnObjects[i].pos.x + 1, spawnObjects[i].pos.y - 1, { align: 'left', opacity: 0.8, font: 0.4 });
+					spawnObjects[i].room.visual.text('     ' + spawningCreep.memory.role + ' - ' + spawnObjects[i].spawning.remainingTime + '/' + spawnObjects[i].spawning.needTime, spawnObjects[i].pos.x + 1, spawnObjects[i].pos.y - 1, { stroke: '#111111', color: '#ff00ff', align: 'left', opacity: 0.8, font: 0.4 });
 				} else {
 					spawnAnnounced = false;
 				}
@@ -830,15 +777,11 @@ module.exports.loop = function () {
 			+ '/' + room.energyCapacityAvailable,
 			readySpawn.pos.x + 1,
 			readySpawn.pos.y - 2,
-			{ align: 'left', opacity: 0.5, color: '#aa5500', font: 0.4 });
+			{ align: 'left', opacity: 0.5, color: '#aa5500', stroke: '#111111', font: 0.4 });
 			//console.log('[' + room.name + ']: Consumed ' + Game.cpu.getUsed().toFixed(3) + ' this tick.');
 		} // end of (for each room owned by player code)
-		/* #endregion */
 
-	});// end of (for each room we have visibility in)
-	/* #endregion */
-
-	
+	});// end of (for each room we have visibility in)	
 	
 	// Assign what actions for each creep to take by role
 	for(let name in Game.creeps) {
@@ -913,11 +856,9 @@ module.exports.loop = function () {
 		//Game.spawns['Spawn1'].room.controller.room.visual.text('L' + Game.spawns['Spawn1'].room.controller.level + ' - ' + Game.spawns['Spawn1'].room.controller.progress + '/' + Game.spawns['Spawn1'].room.controller.progressTotal, Game.spawns['Spawn1'].room.controller.pos.x + 1, Game.spawns['Spawn1'].room.controller.pos.y - 1, {align: 'left', opacity: 0.5, color: '#00ffff', font: 0.4} )
 		
 	}
-/* #endregion */
 	tickCount++;
 	//console.log('Full main loop used ' + Game.cpu.getUsed().toFixed(3) + ' this tick.');
 }
-/* #endregion */
 
 function getBody(segment, room) {
 	let body = [];
