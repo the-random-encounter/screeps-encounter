@@ -2,13 +2,13 @@
 // require creep role modules
 
 const roleHarvester = require('role.harvester');
-const roleUpgrader 	= require('role.upgrader');
-const roleBuilder 	= require('role.builder');
+const roleUpgrader 	= require('role.upgrader'	);
+const roleBuilder 	= require('role.builder'	);
 const roleCollector = require('role.collector');
-const roleRepairer 	= require('role.repairer');
-const roleRunner 		= require('role.runner');
-const roleCrane 		= require('role.crane');
-const roleMiner 		= require('role.miner');
+const roleRepairer 	= require('role.repairer'	);
+const roleRunner 		= require('role.runner'		);
+const roleCrane 		= require('role.crane'		);
+const roleMiner 		= require('role.miner'		);
 const roleScientist = require('role.scientist');
 
 const roleRanger 		= require('role.ranger'	);
@@ -152,7 +152,12 @@ module.exports.loop = function () {
 
 	if (Memory.colonies === undefined) Memory.colonies = {};
 	if (Memory.colonies.colonyList === undefined) Memory.colonies.colonyList = [];
+	if (Memory.globalSettings === undefined) {
+		Memory.globalSettings = {};
+		Memory.globalSettings.consoleSpawnInterval = 10;
+	}
 	
+
 	calcTickTime();
 	
 	// Generate pixels with extra CPU time
@@ -419,7 +424,8 @@ module.exports.loop = function () {
 			}
 			
 			// CONSOLE SPAWN INFO
-			if (tickCount % 10) {
+			const tickInterval = Memory.globalSettings.consoleSpawnInterval;
+			if (tickInterval !== 0 && tickCount % tickInterval) {
 				console.log('H:' + harvesters.length + '(' + harvesterTarget + ') | C:' + collectors.length + '(' + collectorTarget + ') | U:' + upgraders.length + '(' + upgraderTarget + ')| B:' + builders.length + '(' + builderTarget + ') | Rn:' + runners.length + '(' + runnerTarget + ') | Rp:' + repairers.length + '(' + repairerTarget + ') | Cn:' + cranes.length + '(' + craneTarget + ') | Rb:' + rebooters.length + '(' + rebooterTarget + ') | Rv:' + reservers.length + '(' + reserverTarget + ') || Rng:' + rangers.length + '(' + rangerTarget + ') | War:' + warriors.length + '(' + warriorTarget + ') | Hlr:' + healers.length + '(' + healerTarget + ') || RH:' + remoteHarvesters.length + '(' + remoteHarvesterTarget + ') | RR:' + remoteRunners.length + '(' + remoteRunnerTarget + ') | RB:' + remoteBuilders.length + '(' + remoteBuilderTarget + ') | RG:' + remoteGuards.length + '(' + remoteGuardTarget + ') || Energy: ' + room.energyAvailable + '(' + room.energyCapacityAvailable + ')');
 			}
 
