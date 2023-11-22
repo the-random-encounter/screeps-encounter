@@ -37,6 +37,7 @@ const roleUpgrader = {
 
 			if (creep.ticksToLive <= 2) {
 				creep.say('☠️');
+				creep.transfer(Game.getObjectById(creep.memory.mainBucket), RESOURCE_ENERGY);
 			}
 
 			if (creep.memory.working && creep.store[RESOURCE_ENERGY] == 0) {

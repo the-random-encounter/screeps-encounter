@@ -2,7 +2,7 @@ const roleRemoteHarvester = {
 
 	run: function (creep) {
 		const mem = creep.memory;
-		
+
 		if (mem.disableAI === undefined)
 			mem.disableAI = false;
 		if (mem.rallyPoint === undefined)
@@ -23,7 +23,7 @@ const roleRemoteHarvester = {
 						mem.working = false;
 
 					if (creep.store.getFreeCapacity() == 0 || creep.store.getFreeCapacity() < (creep.getActiveBodyparts(WORK) * 2)) {
-						const containers = creep.room.find(FIND_STRUCTURES, { filter: (i) => (i.structureType == STRUCTURE_CONTAINER && (i.hits < i.hitsMax)) });
+						const containers = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: (i) => (i.structureType == STRUCTURE_CONTAINER)});
 						const target = creep.pos.findClosestByRange(containers);
 						if (target) {
 							if (!creep.pos.isNearTo(target))
