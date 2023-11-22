@@ -106,8 +106,43 @@ const roleBuilder = {
         const target = cSites[0];
         if (target) {
           if (creep.build(target) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(target, { visualizePathStyle: { stroke: '#0000ff', opacity: 0.3, lineStyle: 'dotted' } });
+            creep.moveTo(target, { visualizePathStyle: { stroke: '#0000ff', opacity: 0.5, lineStyle: 'dotted', ignoreCreeps: true } });
           }
+        } else {
+          let basics = [];
+					let ramparts = [];
+					let walls = [];
+					let validTargets = [];
+					const rampartsMax = Memory.rooms[creep.memory.homeRoom].settings.repairSettings.repairRampartsTo;
+					const wallsMax = Memory.rooms[creep.memory.homeRoom].settings.repairSettings.repairWallsTo;
+					
+					// search for basically everything that's not a wall or a rampart
+					if (Memory.rooms[creep.memory.homeRoom].settings.flags.repairBasics) {
+						basics = creep.room.find(FIND_STRUCTURES, {
+							filter: (i) => (i.hits < i.hitsMax) && (i.structureType ==
+								STRUCTURE_TOWER || i.structureType == STRUCTURE_SPAWN || i.structureType == STRUCTURE_EXTENSION || i.structureType == STRUCTURE_ROAD || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_EXTRACTOR || i.structureType == STRUCTURE_LAB || i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_STORAGE || i.structureType == STRUCTURE_TERMINAL)
+						});
+						validTargets = validTargets.concat(basics);
+					}
+					
+					// add ramparts to the repair list, based on room flag & room max repair limit
+					if (Memory.rooms[creep.memory.homeRoom].settings.flags.repairRamparts) {
+						ramparts = creep.room.find(FIND_STRUCTURES, { filter: (i) => ((i.structureType == STRUCTURE_RAMPART) && ((i.hits / i.hitsMax * 100) <= rampartsMax)) });
+						validTargets = validTargets.concat(ramparts);
+					}
+					// add walls to the repair list, based on room flag & room max repair limit
+					if (Memory.rooms[creep.memory.homeRoom].settings.flags.repairWalls) {
+						walls = creep.room.find(FIND_STRUCTURES, { filter: (i) => ((i.structureType == STRUCTURE_WALL) && ((i.hits / i.hitsMax * 100) <= wallsMax)) })
+						validTargets = validTargets.concat(walls);
+					}
+
+					const target = creep.pos.findClosestByRange(validTargets);
+						
+					// travel to closest object within repair criteria and start repairing!
+					if (target) {
+						if (creep.repair(target) == ERR_NOT_IN_RANGE)
+							creep.moveTo(target, { visualizePathStyle: { stroke: '#0000ff', opacity: 0.5, lineStyle: 'dotted', ignoreCreeps: true } });
+					}
         }
       }
     }

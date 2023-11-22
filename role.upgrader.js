@@ -33,21 +33,6 @@ const roleUpgrader = {
 				
 		if (!creep.memory.disableAI) {
 
-			if (creep.room.name == 'E58S51' && Game.shard.name == 'shard3') { // AM I IN A SPECIFIC ROOM ON SHARD 3? IF SO, STAND IN THE RIGHT SPOT
-				const badPosC = new RoomPosition(39, 9, 'E58S51');
-				const badPosSW = new RoomPosition(38, 9, 'E58S51');
-				const badPosW = new RoomPosition(38, 8, 'E58S51');
-				const badPosSE = new RoomPosition(40, 9, 'E58S51');
-
-				if (creep.pos.x == badPosC.x && creep.pos.y == badPosC.y) {
-					if (creep.move(8) !== 0)
-						creep.move(1);
-				} else if ((creep.pos.x == badPosSW.x || creep.pos.x == badPosSE.x) && creep.pos.y == badPosSW.y) {
-					creep.move(1);
-				} else if (creep.pos.x == badPosW.x && creep.pos.y == badPosW.y)
-					creep.move(1);
-			}
-
 			const upgradeRoom = creep.memory.upgradeRoom;
 
 			if (creep.ticksToLive <= 2) {
@@ -65,14 +50,10 @@ const roleUpgrader = {
 			}
 			
 			// IF STANDING ON ROOM EXIT, STEP OFF
-			if (creep.pos.x == 49)
-				creep.move(7);
-			else if (creep.pos.x == 0)
-				creep.move(3);
-			if (creep.pos.y == 0)
-				creep.move(5);
-			else if (creep.pos.y == 49)
-				creep.move(1)
+			if (creep.pos.x == 49) creep.move(7);
+			else if (creep.pos.x == 0) creep.move(3);
+			if (creep.pos.y == 0) creep.move(5);
+			else if (creep.pos.y == 49) creep.move(1)
 
 			if (creep.store.getUsedCapacity() == 0) { // I HAVE NO ENERGY, SO...
 				
@@ -87,6 +68,7 @@ const roleUpgrader = {
 				} // end of (if there is no mainBucket in memory)
 				const mainBucket = Game.getObjectById(creep.memory.mainBucket);
 				if (mainBucket) { // MY MAIN BUCKET IS HERE AND ISN'T EMPTY, SO...
+					creep.moveTo(creep.room.controller);
 					if (creep.withdraw(mainBucket, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) // WITHDRAW FROM IT
 						creep.moveTo(mainBucket, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });	
 				} // end of (if main bucket is present & not empty)

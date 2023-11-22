@@ -5,6 +5,7 @@ global.roomDefense = function (room) {
 	
 	_.forEach(towers, function (tower) {
 		if (tower) {
+
 			const tID = tower.id;
 			const closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
 			
@@ -19,17 +20,18 @@ global.roomDefense = function (room) {
 				if (closestDamagedCreep) {
 					tower.heal(closestDamagedCreep);
 				} else {
-					
-					if (room.memory.settings.flags.towerRepairBasic == true) {
+					if (tower.room.memory.data.towerLRT === undefined)
+						tower.room.memory.data.towerLRT = '';
 
-						if (HEAP_MEMORY.towerLRT !== '') {
-							const lastRT = Game.getObjectById(HEAP_MEMORY.towerLRT)
-							if (lastRT.hits < lastRT.hitsMax)
-								tower.repair(lastRT);
-							else if (lastRT.hits == lastRT.hitsMax)
-								HEAP_MEMORY.towerLRT = '';
-							
-						} else {
+					if (tower.room.memory.data.towerLRT !== '') {
+						const lastRT = Game.getObjectById(tower.room.memory.data.towerLRT)
+						if (lastRT.hits < lastRT.hitsMax)
+							tower.repair(lastRT);
+						else if (lastRT.hits == lastRT.hitsMax)
+							tower.room.memory.data.towerLRT = '';
+						
+					} else {
+						if (tower.room.memory.settings.flags.towerRepairBasic == true) {
 
 							let ramparts = [];
 							let walls = [];
@@ -40,7 +42,7 @@ global.roomDefense = function (room) {
 
 							// search for roads, spawns, extensions, or towers under 95%
 							let targets = tower.room.find(FIND_STRUCTURES, {
-								filter: (i) => (i.hits < (i.hitsMax * 0.85)) && (i.structureType ==
+								filter: (i) => (i.hits < i.hitsMax) && (i.structureType ==
 									STRUCTURE_TOWER || i.structureType == STRUCTURE_SPAWN || i.structureType == STRUCTURE_EXTENSION || i.structureType == STRUCTURE_ROAD || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_EXTRACTOR || i.structureType == STRUCTURE_LAB || i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_STORAGE || i.structureType == STRUCTURE_TERMINAL)
 							});
 					
@@ -60,7 +62,7 @@ global.roomDefense = function (room) {
 						
 							const target = tower.pos.findClosestByRange(validTargets);
 							if (target) {
-								HEAP_MEMORY.towerLRT = target.id;
+								tower.room.memory.data.towerLRT = target.id;
 								tower.repair(target);
 							}
 						}

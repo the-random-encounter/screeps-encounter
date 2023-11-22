@@ -7,7 +7,7 @@ const roleRemoteBuilder = {
 			creep.memory.disableAI = false;
 		
 		if (creep.memory.workRoom === undefined)
-			creep.memory.workRoom = 'W8N2';
+			creep.memory.workRoom = Game.rooms[creep.memory.homeRoom].memory.outposts.roomList[HEAP_MEMORY.outpostCounter];
 
 		if (!creep.memory.disableAI) {
 

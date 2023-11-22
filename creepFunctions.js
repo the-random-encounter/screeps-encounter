@@ -80,26 +80,16 @@ Creep.prototype.assignHarvestSource = function(noIncrement) {
 Creep.prototype.assignRemoteHarvestSource = function(roomName, noIncrement = false) {
 	const room = Memory.rooms[roomName];
 
-	console.log(roomName);
-	let LA = Game.rooms[this.memory.homeRoom].memory.outposts.registry[roomName].lastAssigned;
+	let LA = Game.rooms[this.memory.homeRoom].memory.outposts.aggLastAssigned;
 
-	//if (!room.objects)
-	//	room.cacheObjects();
+	const roomSources = Game.rooms[this.memory.homeRoom].memory.outposts.aggregateSourceList;
 
-	const roomSources = Game.rooms[this.memory.homeRoom].memory.outposts.registry[roomName].sources;
-
-	if (this.memory.role == 'remoteminer') {
-		const assignedMineral = room.objects.minerals[0];
-		console.log('Assigned remote miner ' + this.name + ' to remote mineral ID ' + assignedMineral);
-		return assignedMineral;
-	}
-
-	if (Game.rooms[this.memory.homeRoom].memory.outposts.registry[roomName].lastAssigned === undefined) {
-		Game.rooms[this.memory.homeRoom].memory.outposts.registry[roomName].lastAssigned = 0;
+	if (Game.rooms[this.memory.homeRoom].memory.outposts.aggLastAssigned === undefined) {
+		Game.rooms[this.memory.homeRoom].memory.outposts.aggLastAssigned = 0;
 		console.log('Creating \'aggLastAssigned\' memory outpost object.')
 	}
 	
-	let nextAssigned = Game.rooms[this.memory.homeRoom].memory.outposts.registry[roomName].lastAssigned + 1;
+	let nextAssigned = Game.rooms[this.memory.homeRoom].memory.outposts.aggLastAssigned + 1;
 	
 	if (nextAssigned >= roomSources.length) {
 		nextAssigned = 0;
@@ -110,13 +100,14 @@ Creep.prototype.assignRemoteHarvestSource = function(roomName, noIncrement = fal
 
 	this.memory.source = assignedSource;
 
-	if (Game.rooms[this.memory.homeRoom].memory.outposts.registry[roomName].lastAssigned >= roomSources.length)
-		Game.rooms[this.memory.homeRoom].memory.outposts.registry[roomName].lastAssigned = 0;
+	if (Game.rooms[this.memory.homeRoom].memory.outposts.aggLastAssigned >= roomSources.length)
+		Game.rooms[this.memory.homeRoom].memory.outposts.aggLastAssigned = 0;
 
-	console.log('Assigned remote harvester ' + this.name + ' to remote source #' + (LA + 1) + ' (ID: ' + assignedSource + ') in room ' + roomName);
+	const lastAss = Game.rooms[this.memory.homeRoom].memory.outposts.aggLastAssigned;
 
-	if (noIncrement)
-		Game.rooms[this.memory.homeRoom].memory.outposts.registry[roomName].lastAssigned = LA;
+	console.log('Assigned remote harvester ' + this.name + ' to remote source #' + (lastAss + 1) + ' (ID: ' + assignedSource + ') in room ' + roomName);
+
+	if (noIncrement) Game.rooms[this.memory.homeRoom].memory.outposts.aggLastAssigned = LA;
 
 	return assignedSource;
 
@@ -183,10 +174,10 @@ Creep.prototype.harvestEnergy = function() {
 		if (this.memory.role == 'harvester' || this.memory.role == 'miner') {
 			storedSource = this.assignHarvestSource(false);
 		} else if (this.memory.role == 'remoteharvester' || this.memory.role == 'remoteminer') {
-			console.log(Game.rooms[this.memory.homeRoom].memory.outposts.roomList[HEAP_MEMORY.outpostRoomCounter]);
-			console.log(JSON.stringify(HEAP_MEMORY));
+			//console.log(Game.rooms[this.memory.homeRoom].memory.outposts.roomList[HEAP_MEMORY.outpostRoomCounter]);
+			//console.log(JSON.stringify(HEAP_MEMORY));
 			storedSource = this.assignRemoteHarvestSource(Game.rooms[this.memory.homeRoom].memory.outposts.roomList[HEAP_MEMORY.outpostRoomCounter], false);
-			if (HEAP_MEMORY.outpostSourceCounter < Game.rooms[this.memory.homeRoom].memory.outposts.registry[Game.rooms[this.memory.homeRoom].memory.outposts.roomList[HEAP_MEMORY.outpostRoomCounter]].sources.length) {
+			/*if (HEAP_MEMORY.outpostSourceCounter < Game.rooms[this.memory.homeRoom].memory.outposts.registry[Game.rooms[this.memory.homeRoom].memory.outposts.roomList[HEAP_MEMORY.outpostRoomCounter]].sources.length) {
 				HEAP_MEMORY.outpostSourceCounter += 1;
 			
 				HEAP_MEMORY.outpostSourceCounter = 0;
@@ -194,7 +185,7 @@ Creep.prototype.harvestEnergy = function() {
 				if (HEAP_MEMORY.outpostRoomCounter <= Game.rooms[this.memory.homeRoom].memory.outposts.roomList.length) {
 					HEAP_MEMORY.outpostRoomCounter = 0;
 				}
-			}
+			}*/
 		}	
 	}
 	
@@ -410,9 +401,26 @@ Creep.prototype.assignInbox = function(noIncrement) {
 
 }
 
-Creep.prototype.assignLogisticalPair = function(source = false, destination = false) {
+Creep.prototype.assignLogisticalPair = function (logParam) {
+	
+	let source, destination;
+
+	if (Object.prototype.toString.call(logParam) === '[object Array]') {
+		source = logParam[0];
+		destination = logParam[1];
+	} else if (typeof logParam === 'number') {
+		const chosenPair = this.room.memory.data.logisticalPairs[logParam];
+
+		if (!chosenPair) {
+			return 'You supplied a logistical pair index value that does not exist. Recheck available options.';
+		} else {
+			source = chosenPair[0];
+			destination = chosenPair[1];
+		}
+	}
+
 	if ((source && !destination) || (!source && destination))
-		return 'If including parameters, you must specify both the source AND destination.';
+		return 'If including parameters, you must specify both the source AND destination, as an array.';
 
 	if (source && destination) {
 		if (typeof source === 'string')

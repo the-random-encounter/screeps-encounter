@@ -78,7 +78,7 @@ const spawnVariants = {
 	'upgrader400': 		[ WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE ],
 	'upgrader500': 		[	WORK, WORK, WORK, WORK, CARRY, MOVE	],
 	'upgrader550': 		[	WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE	],
-	'upgrader800':   	[	WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE	],
+	'upgrader700':   	[	WORK, WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE	],
 	'upgrader1000':  	[	WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE ],
 	'builder300': 		[ WORK, CARRY, CARRY, MOVE, MOVE ],
 	'builder350': 		[ WORK, CARRY, CARRY, MOVE, MOVE, MOVE ],
@@ -97,7 +97,8 @@ const spawnVariants = {
 	'warrior520': 		[ MOVE, MOVE, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, ATTACK, ATTACK, ATTACK ],
 	'crane300': 			[ CARRY, CARRY, CARRY, CARRY, MOVE, MOVE ],
 	'crane500': 			[	CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE	],
-	'crane800': 			[	CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE ]
+	'crane800': 			[ CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE ],
+	'remoteGuard700': [ TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,ATTACK,ATTACK,ATTACK,ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE ]
 }
 
 // define working variant set for use in the main loop, assigned based on current energy capacity limits
@@ -110,7 +111,7 @@ let availableVariants = {
 	'runner': 		[],
 	'warrior': 		[],
 	'crane': 			[],
-	'remoteGuard': [TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE]
+	'remoteGuard': []
 }
 
 // declare creep counting integers for spawning purposes
@@ -243,6 +244,14 @@ module.exports.loop = function () {
 			room.initFlags();
 		}
 		
+		const numCSitesPrevious = room.memory.data.numCSites || 0;
+		room.memory.data.numCSites = room.find(FIND_CONSTRUCTION_SITES).length;
+		const numCSites = room.memory.data.numCSites;
+
+		if (numCSites < numCSitesPrevious)
+			room.cacheObjects();
+		
+
 		// code to run if room contains a controller owned by us
 		if (room && room.controller && room.controller.my) {
 			
@@ -519,27 +528,30 @@ module.exports.loop = function () {
 			} else if (room.energyCapacityAvailable <= 1000) {
 				availableVariants.harvester 	= spawnVariants.harvester800;
 				availableVariants.collector 	= spawnVariants.collector500;
-				availableVariants.upgrader 		= spawnVariants.upgrader800;
+				availableVariants.upgrader 		= spawnVariants.upgrader700;
 				availableVariants.builder 		= spawnVariants.builder800;
 				availableVariants.repairer 		= spawnVariants.repairer800;
 				availableVariants.runner 			= spawnVariants.runner300;
 				availableVariants.crane 			= spawnVariants.crane500;
+				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
 			} else if (room.energyCapacityAvailable <= 1300) {
 				availableVariants.harvester 	= spawnVariants.harvester800;
 				availableVariants.collector 	= spawnVariants.collector500;
-				availableVariants.upgrader 		= spawnVariants.upgrader800;
+				availableVariants.upgrader 		= spawnVariants.upgrader700;
 				availableVariants.builder 		= spawnVariants.builder1000;
 				availableVariants.repairer 		= spawnVariants.repairer1000;
 				availableVariants.runner 			= spawnVariants.runner300;
 				availableVariants.crane 			= spawnVariants.crane500;
+				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
 			} else if (room.energyCapacityAvailable > 1600) {
 				availableVariants.harvester 	= spawnVariants.harvester800;
 				availableVariants.collector 	= spawnVariants.collector500;
-				availableVariants.upgrader 		= spawnVariants.upgrader800;
+				availableVariants.upgrader 		= spawnVariants.upgrader700;
 				availableVariants.builder 		= spawnVariants.builder1000;
 				availableVariants.repairer 		= spawnVariants.repairer1000;
 				availableVariants.runner 			= spawnVariants.runner300;
 				availableVariants.crane 			= spawnVariants.crane500;
+				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
 			}
 			if (room.memory.settings.flags.craneUpgrades == true) availableVariants.crane = spawnVariants.crane800;
 			if (Game.shard.ptr) availableVariants.builder = spawnVariants.builder300;

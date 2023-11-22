@@ -563,6 +563,10 @@ Room.prototype.registerLogisticalPairs 		= function() {
 	let logisticalPairs = [];
 	let minerals = this.find(FIND_MINERALS);
 	let mineralOutbox;
+	let extractorBuilt = false;
+
+	if (this.memory.objects.extractor !== undefined) extractorBuilt = true;
+
 	if (minerals) {
 		mineralOutbox = minerals[0].pos.findClosestByRange(FIND_STRUCTURES, 5, { filter: { structureType: STRUCTURE_CONTAINER } });
 		if (mineralOutbox) {
@@ -577,11 +581,10 @@ Room.prototype.registerLogisticalPairs 		= function() {
 		//console.log('RegisterLogisticalPairs: energyInbox: ' + energyInbox);
 	}
 	
-	let storage = this.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE } });
-	if (storage.length > 0) {
-		storage = storage[0].id;
-		//console.log('RegisterLogisticalPairs: storage: ' + storage);
-	}
+	let storage;
+	if (this.storage)
+		storage = this.storage.id;
+		
 	
 	let roomOutboxes = this.memory.settings.containerSettings.outboxes || [];
 	let roomInboxes = this.memory.settings.containerSettings.inboxes || [];
@@ -619,7 +622,7 @@ Room.prototype.registerLogisticalPairs 		= function() {
 
 	this.memory.settings.containerSettings.inboxes = roomInboxes;
 
-	if (this.controller.level > 3 && storage) {
+	if (this.storage) {
 		for (let i = 0; i < energyOutboxes.length; i++) {
 			const onePair = [energyOutboxes[i], storage, 'energy', 'source to storage  '];
 			if (onePair[0] && onePair[1])
@@ -634,7 +637,7 @@ Room.prototype.registerLogisticalPairs 		= function() {
 		else
 			console.log('Malformed Pair: ' + onePairStoU);
 		
-		if (mineralOutbox) {
+		if (extractorBuilt && mineralOutbox) {
 			console.log('mineralOutbox: ' + mineralOutbox);
 			console.log('storage: ' + storage);
 			const minType = minerals[0].mineralType;
@@ -1251,4 +1254,17 @@ Room.prototype.registerLinks 							= function() {
 		return linkReport;
 	}
 	
+}
+Room.prototype.registerInvaderGroup = function ( rallyPoint, targetRoom, groupSize = 2, groupRoles = ['melee', 'healer'],) {
+	
+	if (Game.rooms[targetRoom])
+		this.memory.data.invaderTarget = targetRoom;
+	else
+		return '[' + this.name + ']: Invalid targetRoom specified. Please provide a valid room name.';
+
+	//TO DO: COMPLETE REGISTER INVADER GROUP
+	//rallyPoint 
+	//this.memory.data.invaderRallyPoint
+	
+	//this.memory.data.invaderGroupSize 
 }
