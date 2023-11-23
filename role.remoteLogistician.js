@@ -11,8 +11,8 @@ const roleRemoteLogistician = {
 
 		if (cMem.disableAI === undefined) cMem.disableAI = false;
 		if (cMem.rallyPoint === undefined) cMem.rallyPoint = 'none';
-		if (cMem.destPos === undefined) cMem.destPos = [25, 25];
-		if (cMem.destRoom === undefined) cMem.destRoom = 'none';
+		if (cMem.destPos === undefined) cMem.destPos = rMem.data.logisticSpot || [25, 25];
+		if (cMem.destRoom === undefined) cMem.destRoom = rMem.data.attackRoom || 'none';
 
 		if (!cMem.disableAI) {
 			if (cMem.rallyPoint == 'none') {
