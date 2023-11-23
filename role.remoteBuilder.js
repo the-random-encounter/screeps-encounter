@@ -69,7 +69,7 @@ const roleRemoteBuilder = {
 				} else if (creep.store.getUsedCapacity() !== 0 && creep.memory.working) {
 
 					if (creep.room.name !== workRoom)
-						creep.moveTo(Game.getObjectById(Game.rooms[workRoom].memory.objects.controller[0]), { visualizePathStyle: { stroke: '#ffff00', opaciy: 0.3, ignroeCreeps: true } });
+						creep.moveTo(Game.getObjectById(Game.rooms[workRoom].controller), { visualizePathStyle: { stroke: '#ffff00', opaciy: 0.3, ignoreCreeps: true } });
 					else {
 						let targets = Game.rooms[workRoom].find(FIND_CONSTRUCTION_SITES);
 						if (targets.length) {
