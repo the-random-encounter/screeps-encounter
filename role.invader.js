@@ -2,264 +2,258 @@ const roleInvader = {
 
 	run: function (creep) {
 
-		const mem = creep.memory;
+		const room = creep.room;
+		const cMem = creep.memory;
+		const rMem = room.memory;
+		const pos = creep.pos;
 
-		if (mem.disableAI === undefined)
-			mem.disableAI = false;
+		if (cMem.disableAI === undefined) cMem.disableAI = false;
+		if (cMem.rallyPoint === undefined) cMem.rallyPoint = 'none';
 
-		if (mem.targetRoom === undefined) {
-			if (creep.room.memory.data.invaderTarget === undefined)
-				creep.room.memory.data.invaderTarget === 'none';
-			else
-				mem.targetRoom = creep.room.memory.data.invaderTarget;
+		if (cMem.targetRoom === undefined) {
+			if (rMem.data.attackRoomTarget === undefined) rMem.data.invaderTarget === 'none';
+			else cMem.targetRoom = rMem.data.attackRoomTarget;
 		}
 
-		if (mem.rallyPoint === undefined) {
-			if (creep.room.memory.data.invaderRallyPoint === undefined)
-				creep.room.memory.data.invaderRallyPoint = new RoomPosition(25, 25, creep.room.name);
-			else
-				mem.rallyPoint = creep.room.memory.data.invaderRallyPoint;
+		if (cMem.invaderGroupRallyPoint === undefined) {
+			if (rMem.data.invaderGroupRallyPoint === undefined) rMem.data.invaderGroupRallyPoint = new RoomPosition(25, 25, room.name);
+			else cMem.rallyPoint = rMem.data.invaderRallyPoint;
 		}
 
-		if (mem.groupSize === undefined) {
-			if (creep.room.memory.data.invaderGroupSize === undefined)
-				creep.room.memory.data.invaderGroupSize = 3;
-			else
-				mem.groupSize = creep.room.memory.data.invaderGroupSize;
-		}
+		if (cMem.groupSize === undefined) {
+			if (rMem.data.invaderGroupSize === undefined) {
+				rMem.data.invaderGroupSize = 3;
+				cMem.groupSize = 3;
+			} else cMem.groupSize = rMem.data.invaderGroupSize;
+		}	
 		
-		if (!mem.disableAI) {
-			if (mem.combatRole === undefined) {
-				if (creep.getActiveBodyparts(ATTACK) > 0)
-					mem.combatRole = 'melee';
-				else if (creep.getActiveBodyparts(RANGED_ATTACK) > 0)
-					mem.combatRole = 'ranged';
-				else if (creep.getActiveBodyparts(HEAL) > 0)
-					mem.combatRole = 'healer';
-				else if (creep.getActiveBodyparts(WORK) > 0)
-					mem.combatRole = 'engineer';
-				else
-					mem.combatRole = 'unknown';
-			}
+		if (!cMem.disableAI) {
 
-			switch (mem.combatRole) {
+			if (cMem.rallyPoint === 'none') {
 
-				case 'melee':
+				if (creep.pos.x == 49) creep.move(LEFT);
+				else if (creep.pos.x == 0) creep.move(RIGHT);
+				else if (creep.pos.y == 49) creep.move(TOP);
+				else if (creep.pos.y == 0) creep.move(BOTTOM);
+				
+				if (cMem.combatRole === undefined) {
+					if (creep.getActiveBodyparts(ATTACK) > 0) cMem.combatRole = 'melee';
+					else if (creep.getActiveBodyparts(RANGED_ATTACK) > 0) cMem.combatRole = 'ranged';
+					else if (creep.getActiveBodyparts(HEAL) > 0) cMem.combatRole = 'healer';
+					else if (creep.getActiveBodyparts(WORK) > 0) cMem.combatRole = 'engineer';
+					else cMem.combatRole = 'unknown';
+				}
 
-					if (creep.room.name == mem.targetRoom) {
-						let hostilesInRoom = creep.room.find(FIND_HOSTILE_CREEPS);
-						_.filter(hostilesInRoom, (hostile) => hostile.getActiveBodyparts(ATTACK) > 0 || hostile.getActiveBodyparts(RANGED_ATTACK) > 0 || hostile.getActiveBodyparts(HEAL) > 0);
+				switch (cMem.combatRole) {
 
-						if (hostilesInRoom.length > 0) {
-							const nearestHostileCombatant = creep.pos.findClosestByRange(hostilesInRoom);
-							const attackResult = creep.attack(nearestHostileCombatant);
+					case 'melee': {
 
-							switch (attackResult) {
+						if (room.name == cMem.targetRoom) {
+							let hostilesInRoom = room.find(FIND_HOSTILE_CREEPS);
+							_.filter(hostilesInRoom, (hostile) => hostile.getActiveBodyparts(ATTACK) > 0 || hostile.getActiveBodyparts(RANGED_ATTACK) > 0 || hostile.getActiveBodyparts(HEAL) > 0);
 
-								case ERR_NOT_IN_RANGE:
-									creep.say('Moving to engage enemy combatant!');
-									creep.moveTo(nearestHostileCombatant, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
-									break;
-								case OK:
-									creep.say('Attacking enemy combatant!');
-									break;
-							}
-								
-						} else {
-							let hostileTowers = creep.room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
+							if (hostilesInRoom.length > 0) {
+								const nearestHostileCombatant = pos.findClosestByRange(hostilesInRoom);
+								const attackResult = creep.attack(nearestHostileCombatant);
 
-							if (hostileTowers.length > 0) {
-								const closestHostileTowerByPath = creep.pos.findClosestByPath(hostileTowers);
-								const attackResult = creep.attack(closestHostileTowerByPath);
 								switch (attackResult) {
 
 									case ERR_NOT_IN_RANGE:
-										creep.say('Moving to engage tower!');
-										creep.moveTo(closestHostileTowerByPath, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+										creep.say('Moving to engage enemy combatant!');
+										creep.moveTo(nearestHostileCombatant, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
 										break;
 									case OK:
-										creep.say('Attacking enemy tower!');
+										creep.say('Attacking enemy combatant!');
 										break;
-									
 								}
+								
 							} else {
-								let enemyCivilians = creep.room.find(FIND_HOSTILE_CREEPS);
+								let hostileTowers = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
 
-								if (enemyCivilians.length > 0) {
-									const closestEnemyCivilian = creep.pos.findClosestByRange(enemyCivilians);
-									const attackResult = creep.attack(closestEnemyCivilian);
+								if (hostileTowers.length > 0) {
+
+									const closestHostileTowerByPath = pos.findClosestByPath(hostileTowers);
+									const attackResult = creep.attack(closestHostileTowerByPath);
+
 									switch (attackResult) {
-
 										case ERR_NOT_IN_RANGE:
-											creep.say('Moving to engage enemy civilian!');
-											creep.moveTo(closestEnemyCivilian, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+											creep.say('Moving to engage tower!');
+											creep.moveTo(closestHostileTowerByPath, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
 											break;
-										
 										case OK:
-											creep.say('Attacking enemy civilian!');
+											creep.say('Attacking enemy tower!');
 											break;
+									}
+								} else {
+
+									let enemyCivilians = room.find(FIND_HOSTILE_CREEPS);
+
+									if (enemyCivilians.length > 0) {
+										const closestEnemyCivilian = pos.findClosestByRange(enemyCivilians);
+										const attackResult = creep.attack(closestEnemyCivilian);
+										switch (attackResult) {
+											case ERR_NOT_IN_RANGE:
+												creep.say('Moving to engage enemy civilian!');
+												creep.moveTo(closestEnemyCivilian, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+												break;
+											case OK:
+												creep.say('Attacking enemy civilian!');
+												break;
+										}
 									}
 								}
 							}
 						}
+						break;
 					}
+					case 'ranged': {
 
-					break;
-				
-				case 'ranged':
+						if (room.name == cMem.targetRoom) {
 
-					if (creep.room.name == mem.targetRoom) {
-						let hostilesInRoom = creep.room.find(FIND_HOSTILE_CREEPS);
-						_.filter(hostilesInRoom, (hostile) => hostile.getActiveBodyparts(ATTACK) > 0 || hostile.getActiveBodyparts(RANGED_ATTACK) > 0 || hostile.getActiveBodyparts(HEAL) > 0);
+							let hostilesInRoom = room.find(FIND_HOSTILE_CREEPS);
 
-						if (hostilesInRoom.length > 0) {
-							const nearestHostileCombatant = creep.pos.findClosestByRange(hostilesInRoom);
-							const attackResult = creep.rangedAttack(nearestHostileCombatant);
+							_.filter(hostilesInRoom, (hostile) => hostile.getActiveBodyparts(ATTACK) > 0 || hostile.getActiveBodyparts(RANGED_ATTACK) > 0 || hostile.getActiveBodyparts(HEAL) > 0);
 
-							switch (attackResult) {
+							if (hostilesInRoom.length > 0) {
+								const nearestHostileCombatant = pos.findClosestByRange(hostilesInRoom);
+								const attackResult = creep.rangedAttack(nearestHostileCombatant);
 
-								case ERR_NOT_IN_RANGE:
-									creep.say('Moving to engage enemy combatant!');
-									creep.moveTo(nearestHostileCombatant, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
-									break;
-								case OK:
-									creep.say('Attacking enemy combatant!');
-									break;
-							}
-								
-						} else {
-							let hostileTowers = creep.room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
-
-							if (hostileTowers.length > 0) {
-								const closestHostileTowerByPath = creep.pos.findClosestByPath(hostileTowers);
-								const attackResult = creep.rangedAttack(closestHostileTowerByPath);
 								switch (attackResult) {
-
 									case ERR_NOT_IN_RANGE:
-										creep.say('Moving to engage tower!');
-										creep.moveTo(closestHostileTowerByPath, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+										creep.say('Moving to engage enemy combatant!');
+										creep.moveTo(nearestHostileCombatant, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
 										break;
 									case OK:
-										creep.say('Attacking enemy tower!');
+										creep.say('Attacking enemy combatant!');
 										break;
-									
 								}
+								
 							} else {
-								let enemyCivilians = creep.room.find(FIND_HOSTILE_CREEPS);
 
-								if (enemyCivilians.length > 0) {
-									const closestEnemyCivilian = creep.pos.findClosestByRange(enemyCivilians);
-									const attackResult = creep.rangedAttack(closestEnemyCivilian);
+								let hostileTowers = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
+
+								if (hostileTowers.length > 0) {
+									const closestHostileTowerByPath = pos.findClosestByPath(hostileTowers);
+									const attackResult = creep.rangedAttack(closestHostileTowerByPath);
+
 									switch (attackResult) {
-
 										case ERR_NOT_IN_RANGE:
-											creep.say('Moving to engage enemy civilian!');
-											creep.moveTo(closestEnemyCivilian, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+											creep.say('Moving to engage tower!');
+											creep.moveTo(closestHostileTowerByPath, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
 											break;
-										
 										case OK:
-											creep.say('Attacking enemy civilian!');
+											creep.say('Attacking enemy tower!');
 											break;
+									}
+								} else {
+
+									let enemyCivilians = room.find(FIND_HOSTILE_CREEPS);
+
+									if (enemyCivilians.length > 0) {
+										const closestEnemyCivilian = pos.findClosestByRange(enemyCivilians);
+										const attackResult = creep.rangedAttack(closestEnemyCivilian);
+
+										switch (attackResult) {
+											case ERR_NOT_IN_RANGE:
+												creep.say('Moving to engage enemy civilian!');
+												creep.moveTo(closestEnemyCivilian, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+												break;
+											case OK:
+												creep.say('Attacking enemy civilian!');
+												break;
+										}
 									}
 								}
 							}
 						}
+						break;
 					}
+					case 'healer': {
 
-					break;
-				
-				case 'healer':
+						let buddies;
 
-					let buddies;
-					if (creep.pos.isNearTo(mem.rallyPoint)) {
-						buddies = creep.pos.findInRange(FIND_MY_CREEPS, 10, { filter: (crp) => crp.memory.role == 'invader' });
-					}
+						if (pos.isNearTo(cMem.rallyPoint)) buddies = pos.findInRange(FIND_MY_CREEPS, 10, { filter: (crp) => crp.memory.role == 'invader' });
 
-					const closest = creep.pos.findClosestByRange(buddies);
-					if (closest) {
-						creep.moveTo(closest);
-						const healTarget = creep.pos.findClosestByRange(buddies, { filter: function (crp) { return crp.hits < crp.hitsMax } });
-						if (creep.isNearTo(healTarget)) {
-							creep.heal(healTarget);
-						} else {
-							creep.rangedHeal(target);
+						const closest = pos.findClosestByRange(buddies);
+
+						if (closest) {
+							creep.moveTo(closest);
+							const healTarget = pos.findClosestByRange(buddies, { filter: function (crp) { return crp.hits < crp.hitsMax } });
+							if (creep.isNearTo(healTarget)) creep.heal(healTarget);
+							else creep.rangedHeal(target);
 						}
+						break;
 					}
-
-					break;
-				
-				case 'engineer':
+					case 'engineer': {
 					
-					if (creep.room.name == mem.targetRoom) {
-						const enemySpawns = creep.room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_SPAWN } });
+						if (room.name == cMem.targetRoom) {
+							const enemySpawns = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_SPAWN } });
 
-						const closestEnemySpawn = creep.pos.findClosestByRange(enemySpawns);
-
-						if (closestEnemySpawn) {
-							const dismantleResult = creep.dismantle(closestEnemySpawn);
-
-							switch (dismantleResult) {
-
-								case ERR_NOT_IN_RANGE:
-									creep.say('Moving to dismantle enemy spawn!');
-									creep.moveTo(closestEnemySpawn, { visualizePathStyle: { stroke: '#ff0099', opacity: 0.8, lineStyle: 'undefined' } });
-									break;
-							
-								case OK:
-									creep.say('Dismantling enemy spawn!');
-									break;
-							}
-						} else {
-							const enemyStructures = creep.room.find(FIND_HOSTILE_STRUCTURES);
-
-							const closestEnemyStructure = creep.pos.findClosestByRange(enemyStructures);
-
-							if (closestEnemyStructure) {
-								const dismantleResult = creep.dismantle(closestEnemyStructure);
+							if (enemySpawns.length > 0) {
+								const closestEnemySpawn = pos.findClosestByRange(enemySpawns);
+								const dismantleResult = creep.dismantle(closestEnemySpawn);
 
 								switch (dismantleResult) {
-
 									case ERR_NOT_IN_RANGE:
-										creep.say('Moving to dismantle enemy structure!');
+										creep.say('Moving to dismantle enemy spawn!');
 										creep.moveTo(closestEnemySpawn, { visualizePathStyle: { stroke: '#ff0099', opacity: 0.8, lineStyle: 'undefined' } });
 										break;
-							
 									case OK:
-										creep.say('Dismantling enemy structure!');
+										creep.say('Dismantling enemy spawn!');
 										break;
 								}
 							} else {
-								const enemyConSites = creep.room.find(FIND_HOSTILE_CONSTRUCTION_SITES);
+								const enemyStructures = room.find(FIND_HOSTILE_STRUCTURES);
 
-								const closestEnemyConSite = creep.pos.findClosestByRange(enemyConSites);
+								if (enemyStructures.length > 0) {
+									const closestEnemyStructure = pos.findClosestByRange(enemyStructures);
+									const dismantleResult = creep.dismantle(closestEnemyStructure);
 
-								if (closestEnemyConSite) {
-
-									const dismantleResult = creep.dismantle(closestEnemyConSite);
 									switch (dismantleResult) {
-
 										case ERR_NOT_IN_RANGE:
-											creep.say('Moving to dismantle construction site!');
+											creep.say('Moving to dismantle enemy structure!');
 											creep.moveTo(closestEnemySpawn, { visualizePathStyle: { stroke: '#ff0099', opacity: 0.8, lineStyle: 'undefined' } });
 											break;
-							
 										case OK:
-											creep.say('Dismantling construction site!');
+											creep.say('Dismantling enemy structure!');
 											break;
+									}
+								} else {
+									const enemyConSites = room.find(FIND_HOSTILE_CONSTRUCTION_SITES);
+									
+									if (enemyConSites.length > 0) {
+										const closestEnemyConSite = pos.findClosestByRange(enemyConSites);
+										const dismantleResult = creep.dismantle(closestEnemyConSite);
+
+										switch (dismantleResult) {
+											case ERR_NOT_IN_RANGE:
+												creep.say('Moving to dismantle construction site!');
+												creep.moveTo(closestEnemySpawn, { visualizePathStyle: { stroke: '#ff0099', opacity: 0.8, lineStyle: 'undefined' } });
+												break;
+											case OK:
+												creep.say('Dismantling construction site!');
+												break;
+										}
 									}
 								}
 							}
 						}
+						break;
 					}
-					break;
-				
-				case 'unknown':
-					creep.say('My role is unknown!');
-					break;
+					case 'unknown': {
+						creep.say('My role is unknown!');
+						break;
+					}
+				}
+			}	else { // I HAVE A RALLY POINT, LET'S BOOGY!
+				const rally = Game.flags[cMem.rallyPoint];
+				if (pos.isNearTo(rally)) cMem.rallyPoint = 'none';
+				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
 			}
-
-		} else {
-			creep.say("AI Disabled");
+		}	else {
+			if (!Memory.globalSettings.alertDisabled)
+				console.log('[' + room.name + ']: WARNING: Creep ' + creep.name + '\'s AI is disabled.');
+			creep.say('AI Disabled');
 		}
 	}
 }

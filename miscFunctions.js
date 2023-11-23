@@ -152,28 +152,28 @@ global.visualRCProgress = function (controllerID) {
 
 	switch (controllerID.level) {
 		case 1:
-			lvlColor = '#005500';
+			lvlColor = '#00a000';
 			break;
 		case 2:
-			lvlColor = '#00ffff';
+			lvlColor = '#40ff00';
 			break;
 		case 3:
 			lvlColor = '#22dddd';
 			break;
 		case 4:
-			lvlColor = '#44ccaa';
+			lvlColor = '#00ffaa';
 			break;
 		case 5:
-			lvlColor = '#6600ff';
+			lvlColor = '#8000ff';
 			break;
 		case 6:
-			lvlColor = '#99ff00';
+			lvlColor = '#dd00bb';
 			break;
 		case 7:
-			lvlColor = '#cc00ff';
+			lvlColor = '#dd7700';
 			break;
 		case 8:
-			lvlColor = '#aa0000';
+			lvlColor = '#dd0000';
 			break;
 		
 	}
@@ -184,14 +184,66 @@ global.visualRCProgress = function (controllerID) {
 	else
 		cont = controllerID;
 
-	cont.room.visual.text('L' + cont.level + ' - ' + cont.progress + '/' + cont.progressTotal, cont.pos.x + 1, cont.pos.y - 1, { align: 'left', opacity: 0.5, color: lvlColor, font: 0.4 });
+	if (HEAP_MEMORY.rooms[cont.room.name] === undefined)
+		HEAP_MEMORY.rooms[cont.room.name] = {};
+	if (HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray === undefined)
+		HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray = [];
+	if (HEAP_MEMORY.rooms[cont.room.name].controllerProgress === undefined)
+		HEAP_MEMORY.rooms[cont.room.name].controllerProgress = 0;
+	
+	const progress = cont.progress;
 
-	cont.room.visual.text('          ' + ((cont.progress / cont.progressTotal) * 100).toFixed(2) + '%', cont.pos.x + 1, cont.pos.y, { align: 'left', opacity: 0.5, color: lvlColor, font: 0.4 });
-		
+	let progressLastTick;
+	if (HEAP_MEMORY.rooms[cont.room.name].controllerProgress !== 0)
+		progressLastTick = progress - HEAP_MEMORY.rooms[cont.room.name].controllerProgress;
+	else
+		progressLastTick = 0;
+
+	if (!(progressLastTick == 0 && HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray.length == 0))
+		HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray.push(progressLastTick);
+
+	HEAP_MEMORY.rooms[cont.room.name].controllerProgress = progress;
+
+
+	let sum = HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray.reduce(add, 0);
+	let arrayLen = HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray.length;
+
+	function add(accumulator, a) {
+		return accumulator + a;
+	}
+	
+	const avgProgressPerTick = (sum / arrayLen).toFixed(2);
+	
+	const progressRemaining = cont.progressTotal - cont.progress;
+
+	const ticksRemaining = (progressRemaining / avgProgressPerTick).toFixed(0);
+
+	const currentTickDuration = Memory.lastTickTime.toFixed(2);
+	const secondsRemaining = ticksRemaining * currentTickDuration;
+	let days = Math.floor(secondsRemaining / (3600 * 24));
+	let hours = Math.floor(secondsRemaining % (3600 * 24) / 3600);
+	let minutes = Math.floor(secondsRemaining % 3600 / 60);
+	let seconds = Math.floor(secondsRemaining % 60);
+	
+	cont.room.visual.text(('L' + cont.level + ' - ' + ((cont.progress / cont.progressTotal) * 100).toFixed(2)) + '%', cont.pos.x + 1, cont.pos.y - 1.2, { align: 'left', opacity: 0.8, color: lvlColor, font: 0.6, stroke: '#000000' });
+
+	cont.room.visual.text((cont.progress + '/' + cont.progressTotal) + ' - Avg: +' + avgProgressPerTick, cont.pos.x + 1, cont.pos.y - 0.6, { align: 'left', opacity: 0.8, color: lvlColor, font: 0.5, stroke: '#000000' });
+
+	cont.room.visual.text(days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's (' + ticksRemaining + ' ticks)', cont.pos.x + 1, cont.pos.y, { align: 'left', opacity: 0.8, color: lvlColor, font: 0.5, stroke: '#000000' });
 }
 
-global.queue = function (command) {
-	manualCmdQueue.push(command);
+global.secondsToDhms = function(seconds) {
+seconds = Number(seconds);
+var d = Math.floor(seconds / (3600*24));
+var h = Math.floor(seconds % (3600*24) / 3600);
+var m = Math.floor(seconds % 3600 / 60);
+var s = Math.floor(seconds % 60);
+
+var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
+var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+return dDisplay + hDisplay + mDisplay + sDisplay;
 }
 
 Object.assign(exports, {

@@ -293,8 +293,6 @@ Room.prototype.setQuota 									= function(roleTarget, newTarget) {
 Room.prototype.setTarget 									= function(roleTarget, newTarget) {
 
 	const oldTarget = this.memory.targets[roleTarget];
-
-	console.log(oldTarget);
 	this.memory.targets[roleTarget] = newTarget;
 
 	return ('[' + this.name + ']: Set role \'' + roleTarget + '\' target to ' + newTarget + ' (was ' + oldTarget + ').');
@@ -311,10 +309,7 @@ Room.prototype.sendEnergy 								= function() {
 		return '[' + this.name + ']: On cooldown, ' + linkFromLocal.cooldown + ' ticks remaining.';
 	}
 }
-Room.prototype.initRoom 									= function() {
-	this.initRoomData();
-}
-Room.prototype.initRoomData 							= function() {
+Room.prototype.initRoom										= function() {
 
 	if (!this.memory.objects)
 		this.memory.objects = {};
@@ -332,7 +327,9 @@ Room.prototype.initRoomData 							= function() {
 	this.cacheObjects();
 	this.initRoomFlags();
 	this.initRoomSettings();
-	this.initTargets();
+	
+	if (this.controller && this.controller.my)
+		this.initTargets();
 }
 Room.prototype.initTargets 								= function(targetArray = false) {
 
@@ -383,10 +380,7 @@ Room.prototype.initTargets 								= function(targetArray = false) {
 		this.memory.targets.scientist = targetArray[17];
 	}
 }
-Room.prototype.initFlags									= function() {
-	this.initRoomFlags();
-}
-Room.prototype.initRoomFlags 							= function() {
+Room.prototype.initFlags 									= function() {
 
 	if (!this.memory.settings.flags)
 		this.memory.settings.flags = {};
@@ -478,10 +472,7 @@ Room.prototype.setRoomFlags 							= function([flags]) {
 
 	return '[' + this.name + ']: Room flags set: centralStorageLogic(' + this.memory.settings.flags.centralStorageLogic + ') repairRamparts(' + this.memory.settings.flags.repairRamparts + ') repairWalls(' + this.memory.settings.flags.repairWalls + ') runnersDoMinerals(' + this.memory.settings.flags.runnersDoMinerals + ') towerRepairBasic(' + this.memory.settings.flags.towerRepairBasic + ') towerRepairDefenses(' + this.memory.settings.flags.towerRepairDefenses + ') runnersDoPiles(' + this.memory.settings.flags.runnersDoPiles + ') harvestersFixAdjacent(' + this.memory.settings.flags.harvestersFixAdjacent + ') repairBasics(' + this.memory.settings.flags.repairBasics + ') upgradersSeekEnergy(' + this.memory.settings.flags.upgradersSeekEnergy + ')';
 }
-Room.prototype.initSettings 							= function() {
-	this.initRoomSettings();
-}
-Room.prototype.initRoomSettings 					= function() {
+Room.prototype.initSettings 					= function() {
 
 	if (!this.memory.settings)
 		this.memory.settings = {};
@@ -803,6 +794,11 @@ Room.prototype.toggleFlag 								= function(flag, initIfNull = false, defaultVa
 		}
 	}
 }
+
+Room.prototype.enableCSL 	= function() { this.enableCentralStorageLogic(); }
+Room.prototype.disableCSL = function () { this.disableCentralStorageLogic(); }
+Room.prototype.toggleCSL = function () { this.toggleCentralStorageLogic(); }
+
 Room.prototype.enableCentralStorageLogic 	= function() {
 	this.memory.settings.flags.centralStorageLogic = true;
 	return true;
@@ -1183,12 +1179,65 @@ Room.prototype.registerOutpost 						= function(roomName) {
 		rallyPoint: createRoomFlag(outpostRoomName)
 	}
 	this.memory.outposts.aggregateSourceList = this.memory.outposts.aggregateSourceList.concat(newOutpost.sources);
+	if (Memory.rooms[outpostRoomName].objects.containers !== undefined && Memory.rooms[outpostRoomName].objects.containers.length > 0) {
+		this.memory.outposts.aggregateContainerList = Memory.rooms[outpostRoomName].objects.containers;
+		this.memory.outposts.aggLastContainer = 0;
+	}
 	this.memory.outposts.registry[outpostRoomName] = newOutpost;
 	
+	Memory.rooms[outpostRoomName].outpostOfRoom = this.name;
+
 	currentOutpostList.push(outpostRoomName);
 	this.memory.outposts.roomList = currentOutpostList;
 
 	return '[' + this.name + ']: Outpost at ' + outpostRoomName + ' successfully registered.';
+}
+Room.prototype.registerOutpostContainers 	= function (outpostName) {
+	
+	
+
+	if (typeof outpostName === 'string') { // CALLED FROM MASTER COLONY ROOM
+		Game.rooms[outpostName].cacheObjects();
+		if (Game.rooms[outpostName].memory.objects.containers !== undefined && Game.rooms[outpostName].memory.objects.containers.length > 0) {
+			const outpostContainerArray = Game.rooms[outpostName].memory.objects.containers;
+			if (this.memory.outposts.aggContainerList === undefined) this.memory.outposts.aggContainerList = [];
+			if (this.memory.outposts.aggContainerAssigned === undefined) this.memory.outposts.aggContainerAssigned = 0;
+			
+			let aggContainerList = this.memory.outposts.aggContainerList;
+
+			for (let i = 0; i < outpostContainerArray.length; i++) {
+				if (aggContainerList.includes(outpostContainerArray[i])) continue;
+				else aggContainerList.push(outpostContainerArray[i]);
+			}
+
+			this.memory.outposts.aggContainerList = aggContainerList;
+			const sourceListLen = this.memory.outposts.aggregateSourceList.length;
+
+			return 'New aggregate container list now includes ' + aggContainerList.length + ' items, for ' + sourceListLen + ' sources.'; 
+		}
+	} else if (typeof outpostName === 'undefined') { // CALLED FROM OUTPOST ROOM
+		this.cacheObjects();
+		if (this.memory.objects.containers !== undefined && this.memory.objects.containers.length > 0) {
+			const homeRoomName = this.memory.outpostOfRoom;
+			const outpostContainerArray = this.memory.objects.containers;
+			if (Game.rooms[homeRoomName].memory.outposts.aggContainerList === undefined) Game.rooms[homeRoomName].memory.outposts.aggContainerList = [];
+			if (Game.rooms[homeRoomName].memory.outposts.aggContainerAssigned === undefined) Game.rooms[homeRoomName].memory.outposts.aggContainerAssigned = 0;
+
+			let aggContainerList = Game.rooms[homeRoomName].memory.outposts.aggContainerList;
+
+			for (let i = 0; i < outpostContainerArray.length; i++) {
+				if (aggContainerList.includes(outpostContainerArray[i])) continue;
+				else aggContainerList.push(outpostContainerArray[i]);
+			}
+
+			Game.rooms[homeRoomName].memory.outposts.aggContainerList = aggContainerList;
+			const sourceListLen = Game.rooms[homeRoomName].memory.outposts.aggregateSourceList.length;
+
+			return 'New aggregate container list now includes ' + aggContainerList.length + ' items, for ' + sourceListLen + ' sources.'; 
+		}
+	} else {
+		return 'Invalid parameter specified. Either include the home room\'s outpost room name room name as a string, or call from the outpost room itself.';
+	}
 }
 Room.prototype.calcOutpostPotential 			= function() {
 	const exitDirections = Object.keys(Game.map.describeExits(this.name));
@@ -1218,38 +1267,39 @@ Room.prototype.registerLinks 							= function() {
 		let linkSource1;
 		let linkSource2;
 		let linkDestination;
-		let linkReport = '';
 
-		const storage 		= Game.getObjectById(this.memory.objects.storage[0]);
+		const storage 		= this.storage;
 		const source1 		= Game.getObjectById(this.memory.objects.sources[0]);
 		const source2 		= Game.getObjectById(this.memory.objects.sources[1]);
-		const controller 	= Game.getObjectById(this.memory.objects.controller[0]);
+		const controller 	= this.controller;
 
-		if (numLinks >= 1) linkCentral 			= storage		.pos.findClosestByRange(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_LINK } });
-		if (numLinks >= 2) linkSource1 			= source1		.pos.findClosestByRange(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_LINK } });
-		if (numLinks >= 3) linkSource2 			= source2		.pos.findClosestByRange(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_LINK } });
-		if (numLinks >= 4) linkDestination 	= controller.pos.findClosestByRange(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_LINK } });
+		linkCentral = storage.pos.findInRange(FIND_MY_STRUCTURES, 3,{ filter: { structureType: STRUCTURE_LINK } });
+		linkSource1	= source1.pos.findInRange(FIND_MY_STRUCTURES, 3,{ filter: { structureType: STRUCTURE_LINK } });
+		linkSource2 = source2.pos.findInRange(FIND_MY_STRUCTURES, 3,{ filter: { structureType: STRUCTURE_LINK } });
+		linkDestination = controller.pos.findInRange(FIND_MY_STRUCTURES, 3,{ filter: { structureType: STRUCTURE_LINK } });
 
-		if (numLinks > 0) {
-			this.memory.data.linkRegistry.sourceOne = linkSource1.id;
-			linkReport += 'SOURCE #1: ' + linkSource1.id + "\n";
+		let linkReport = '[' + this.name + ']: LINK REGISTRATION REPORT:-------------------###';
+
+		if (linkCentral.length > 0) {
+			this.memory.data.linkRegistry.central = linkCentral[0].id;
+			linkReport += '\n CENTRAL LINK: REGISTERED';
 		}
-		if (numLinks > 1) {
-			this.memory.data.linkRegistry.central = linkCentral.id;
-			linkReport += 'CENTRAL: ' + linkCentral.id + "\n";
+		if (linkSource1.length > 0) {
+			this.memory.data.linkRegistry.sourceOne = linkSource1[0].id;
+			linkReport += '\n SOURCE ONE LINK: REGISTERED';
 		}
-		if (numLinks > 2) {
-			if (linkSource2) {
-				this.memory.data.linkRegistry.sourceTwo = linkSource2.id;
-				linkReport += 'SOURCE #2: ' + linkSource2.id + "\n";
-			}
-			if (linkDestination) {
-				this.memory.data.linkRegistry.destination = linkDestination.id;
-				linkReport += 'DESTINATION: ' + linkDestination.id + "\n";
-			}
+		if (linkSource2.length > 0) {
+			this.memory.data.linkRegistry.sourceTwo = linkSource2[0].id;
+			linkReport += '\n SOURCE TWO LINK: REGISTERED';
+		}
+		if (linkDestination.length > 0) {
+			this.memory.data.linkRegistry.destination = linkDestination[0].id;
+			linkReport += '\n CONTROLLER LINK: REGISTERED';
 		}
 		
-		this.registerLogisticalPairs();
+		//this.registerLogisticalPairs();
+		
+		console.log(linkReport);
 
 		return linkReport;
 	}
@@ -1267,4 +1317,10 @@ Room.prototype.registerInvaderGroup = function ( rallyPoint, targetRoom, groupSi
 	//this.memory.data.invaderRallyPoint
 	
 	//this.memory.data.invaderGroupSize 
+}
+Room.prototype.setAttackRoom = function (roomName) { this.memory.data.attackRoomTarget = roomName; }
+Room.prototype.setCustomAttackTarget = function (attackTarget) { this.memory.data.customAttackTarget = attackTarget;	}
+Room.prototype.setCraneSpot = function (posX, posY) {
+	this.memory.data.craneSpot = [posX, posY];
+	console.log('[' + this.name + ']: Set craneSpot to ' + posX + ', ' + posY + '.');
 }

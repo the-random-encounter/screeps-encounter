@@ -2,118 +2,48 @@ const roleClaimer = {
 
 	run: function (creep) {
 
-		if (creep.memory.disableAI === undefined) {
-			creep.memory.disableAI = false;
-		}
+		const room = creep.room;
+		const cMem = creep.memory;
+		const rMem = room.memory;
+		const pos = creep.pos;
 
-		if (creep.memory.claimRoomName === undefined) {
-			creep.memory.claimRoomName = 'define me';
-		}
+		if (cMem.disableAI === undefined) cMem.disableAI = false;
+		if (cMem.rallyPoint === undefined) cMem.rallyPoint = 'none';
+		if (cMem.claimRoomName === undefined)	cMem.claimRoomName = 'define me';
 
-		if (!creep.memory.disableAI) {
+		if (!cMem.disableAI) {
 
-			if (creep.memory.claimFlag === undefined) {
-				creep.memory.claimFlag = 'none';
-			}
+			if (cMem.rallyPoint == 'none') {
 
-			const claimRoom = creep.memory.claimRoomName;
+				if (pos.x == 49) creep.move(LEFT);
+				else if (pos.x == 0) creep.move(RIGHT);
+				else if (pos.y == 49) creep.move(TOP);
+				else if (pos.y == 0) creep.move(BOTTOM);
 
-			if (creep.room.name !== claimRoom) {
-				/*if (creep.memory.claimFlag !== 'none' && !creep.memory.claimFlag !== undefined) {
-					let to = new RoomPosition(25, 25, 'E59S48');
-					let from = new RoomPosition(creep.pos.x, creep.pos.y, creep.pos.roomName);
+				if (cMem.claimFlag === undefined) cMem.claimFlag = 'none';
 
-					// Use `findRoute` to calculate a high-level plan for this path,
-					// prioritizing highways and owned rooms
-					let allowedRooms = { [ from.roomName ]: true };
-					const route = Game.map.findRoute(from.roomName, to.roomName, {
-							routeCallback(roomName) {
-									let parsed = /^[WE]([0-9]+)[NS]([0-9]+)$/.exec(roomName);
-									let isHighway = (parsed[1] % 10 === 0) || 
-																	(parsed[2] % 10 === 0);
-									let isMyRoom = Game.rooms[roomName] &&
-											Game.rooms[roomName].controller &&
-											Game.rooms[roomName].controller.my;
-									if (isHighway || isMyRoom) {
-											return 1;
-									} else {
-											return 2.5;
-									}
-							}
-					}).forEach(function(info) {
-							allowedRooms[info.room] = true;
-					});
+				const claimRoom = cMem.claimRoomName;
 
-					// Invoke PathFinder, allowing access only to rooms from `findRoute`
-					let ret = PathFinder.search(from, to, {
-							roomCallback(roomName) {
-									if (allowedRooms[roomName] === undefined) {
-											return false;
-									}
-							}
-					});
-					if (creep.room.name = creep.memory.homeRoom) {
-						creep.moveTo(new RoomPosition(25, 25, 'E59S48'), {visualizePathStyle: {stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined'}});
+				if (room.name !== claimRoom) {
+					if (creep.store.getUsedCapacity() == 0 && creep.getActiveBodyparts(CARRY) > 0) {
+						const storage = Game.rooms[cMem.homeRoom].storage;
+						if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(storage);						
 					} else {
-						console.log(ret.path);
-						if (ret.length > 0) {
-							console.log('Now heading to room ' + route[0].room);
-							const exit = creep.pos.findClosestByPath(route[0].exit);
-							creep.moveTo(exit, {visualizePathStyle: {stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined'}});
-						}
+						if (!pos.isNearTo(Game.flags.ClaimPoint1)) creep.moveTo(Game.flags.ClaimPoint1, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined' } });
+						else cMem.waypointOneReached = true;
 					}
-				}*/
-
-				if (creep.memory.waypointTwoReached !== undefined) {
-					creep.moveTo(Game.flags.ClaimFlag, {visualizePathStyle: {stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined'}});
 				} else {
-					if (creep.memory.waypointOneReached !== undefined) {
-						if (!creep.pos.isNearTo(Game.flags.ClaimPoint2))
-							creep.moveTo(Game.flags.ClaimPoint2, {visualizePathStyle: {stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined'}});
-						else
-							creep.memory.waypointTwoReached = true;
-					} else {
-						if (creep.store.getUsedCapacity() == 0 && creep.getActiveBodyparts(CARRY) > 0) {
-							if (creep.memory.gotBoosted === undefined) {
-								const lab = Game.getObjectById('653943a3ab148e155d563b71')
-								if (!creep.pos.isNearTo(lab))
-									creep.moveTo(lab)
-								else {
-									lab.boostCreep(creep, 25)
-									creep.memory.gotBoosted = true;
-								}
-							} else {
-								const storage = Game.getObjectById('6530e110fb12195485fc0a2a');
-
-								if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
-									creep.moveTo(storage);
-							}
-						} else {
-							if (!creep.pos.isNearTo(Game.flags.ClaimPoint1))
-								creep.moveTo(Game.flags.ClaimPoint1, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined' } });
-							else {
-								creep.memory.waypointOneReached = true;
-							}
-						}
-					}
+					if (creep.claimController(room.controller) == ERR_NOT_IN_RANGE)
+						creep.moveTo(room.controller, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined' } });
 				}
-			} else {
-
-				if (creep.pos.x == 49)
-					creep.move(7);
-				else if (creep.pos.x == 0)
-					creep.move(3);
-				else if (creep.pos.y == 49)
-					creep.move(1);
-				else if (creep.pos.y == 0)
-					creep.move(5);
-				else {
-					if (creep.claimController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-						creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined'}});
-					}
-				}
+			} else { // I HAVE A RALLY POINT, LET'S BOOGY!
+				const rally = Game.flags[cMem.rallyPoint];
+				if (pos.isNearTo(rally)) cMem.rallyPoint = 'none';
+				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 			}
-		} else {
+		}	else {
+			if (!Memory.globalSettings.alertDisabled)
+				console.log('[' + room.name + ']: WARNING: Creep ' + creep.name + '\'s AI is disabled.');
 			creep.say('AI Disabled');
 		}
 	}

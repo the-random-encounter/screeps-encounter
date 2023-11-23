@@ -3,66 +3,54 @@ const roleRanger = {
 	/** @param {Creep} creep **/
 	run: function (creep) {
 
-		if (creep.memory.disableAI === undefined)
-			creep.memory.disableAI = false;
+		const room = creep.room;
+		const cMem = creep.memory;
+		const rMem = room.memory;
+		const pos = creep.pos;
 
-		if (creep.memory.attackRoom === undefined)
-			creep.memory.attackRoom = creep.room.name;
+		if (cMem.disableAI === undefined) cMem.disableAI = false;
+		if (cMem.rallyPoint === undefined) cMem.rallyPoint = 'none';
+		if (cMem.attackRoom === undefined) cMem.attackRoom = room.name;
 		
-		if (!creep.memory.disableAI) {
+		if (!cMem.disableAI) {
 
-			if (creep.ticksToLive <= 2) {
-				creep.drop(RESOURCE_ENERGY);
-				creep.say('☠️');
-			}
+			if (cMem.rallyPoint == 'none') {
+
+				if (creep.ticksToLive <= 2) creep.say('☠️');
+				if (room.name !== cMem.attackRoom) creep.moveTo(Game.flags.Attack);
+
+				if (pos.x == 49) creep.move(LEFT);
+				else if (pos.x == 0) creep.move(RIGHT);
+				else if (pos.y == 49) creep.move(TOP);
+				else if (pos.y == 0) creep.move(BOTTOM);
+
+				const hostiles = room.find(FIND_HOSTILE_CREEPS);
+				const target = pos.findClosestByRange(hostiles);
 			
-			if (creep.room.name !== creep.memory.attackRoom) {
-				creep.moveTo(Game.flags.Attack);
-			}
-
-			if (creep.pos.x == 49) {
-				if (creep.memory.moveLast == 7)
-					creep.move(7);
-				creep.memory.moveLast = 3;
-			} else if (creep.pos.x == 0) {
-				if (creep.memory.moveLast = 3) 
-					creep.move(3);
-				creep.memory.moveLast = 7;
-			} else if (creep.pos.y == 49) {
-				if (creep.memory.moveLast == 1)
-					creep.move(1);
-				creep.memory.moveLast = 5;
-			} else if (creep.pos.y == 0) {
-				if (creep.memory.moveLast == 5)
-					creep.move(5);
-				creep.memory.moveLast = 1;
-			}
-
-			const hostiles = creep.room.find(FIND_HOSTILE_CREEPS);
-			
-			const target = creep.pos.findClosestByRange(hostiles);
-			
-			if (target) {
-				if (creep.rangedAttack(target) == ERR_NOT_IN_RANGE)
-					creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
-			} else {
-
-				let structures = creep.room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
-
-				if (!structures) {
-					structures = creep.room.find(FIND_HOSTILE_STRUCTURES);
-				}
-
-				const target = creep.pos.findClosestByRange(structures);
-
 				if (target) {
 					if (creep.rangedAttack(target) == ERR_NOT_IN_RANGE)
 						creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+				} else {
+
+					let structures = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
+
+					if (!structures) structures = room.find(FIND_HOSTILE_STRUCTURES);
+
+					const target = pos.findClosestByRange(structures);
+
+					if (target) {
+						if (creep.rangedAttack(target) == ERR_NOT_IN_RANGE)
+							creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+					}
 				}
+			} else { // I HAVE A RALLY POINT, LET'S BOOGY!
+				const rally = Game.flags[cMem.rallyPoint];
+				if (pos.isNearTo(rally)) cMem.rallyPoint = 'none';
+				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 			}
-		}
-		else {
-			console.log('[' + creep.room.name + ']: WARNING: Creep ' + creep.name + '\'s AI is disabled.');
+		}	else {
+			if (!Memory.globalSettings.alertDisabled)
+				console.log('[' + room.name + ']: WARNING: Creep ' + creep.name + '\'s AI is disabled.');
 			creep.say('AI Disabled');
 		}
 	}

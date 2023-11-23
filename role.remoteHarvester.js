@@ -1,55 +1,55 @@
 const roleRemoteHarvester = {
 
 	run: function (creep) {
-		const mem = creep.memory;
 
-		if (mem.disableAI === undefined)
-			mem.disableAI = false;
-		if (mem.rallyPoint === undefined)
-			mem.rallyPoint = 'none';
+		const room = creep.room;
+		const cMem = creep.memory;
+		const rMem = room.memory;
+		const pos = creep.pos;
+
+		if (cMem.disableAI === undefined) cMem.disableAI = false;
+		if (cMem.rallyPoint === undefined) cMem.rallyPoint = 'none';
 		
-		if (!mem.disableAI) {
-			if (mem.rallyPoint == 'none') {
-				if (creep.ticksToLive <= 2)
-					creep.say('☠️');
+		if (!cMem.disableAI) {
+
+			if (cMem.rallyPoint == 'none') {
+				
+				if (creep.ticksToLive <= 2) creep.say('☠️');
 				else {
 
-					if (!mem.working && creep.store[RESOURCE_ENERGY] > 0) {
-						mem.working = true;
-						creep.say('⛏️');
-					}
-			
-					if (mem.working && creep.store.getFreeCapacity() < (creep.getActiveBodyparts(WORK) * 2))
-						mem.working = false;
-
+					if (creep.pos.x == 49) creep.move(LEFT);
+					else if (creep.pos.x == 0) creep.move(RIGHT);
+					else if (creep.pos.y == 49) creep.move(TOP);
+					else if (creep.pos.y == 0) creep.move(BOTTOM);
+					
 					if (creep.store.getFreeCapacity() == 0 || creep.store.getFreeCapacity() < (creep.getActiveBodyparts(WORK) * 2)) {
-						const containers = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: (i) => (i.structureType == STRUCTURE_CONTAINER)});
-						const target = creep.pos.findClosestByRange(containers);
+
+						const containers = pos.findInRange(FIND_STRUCTURES, 1, { filter: (i) => (i.structureType == STRUCTURE_CONTAINER)});
+						const target = pos.findClosestByRange(containers);
+
 						if (target) {
-							if (!creep.pos.isNearTo(target))
-								creep.moveTo(target, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'dashed' } });
+
+							if (!pos.isNearTo(target)) creep.moveTo(target, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'dashed' } });
 							else {
-								if (target.hits < target.hitsMax)
-									creep.repair(target);
+								if (target.hits < target.hitsMax) creep.repair(target);
 								else creep.unloadEnergy();
 							}
 						} else {
-							const nearbySites = creep.pos.findInRange(FIND_CONSTRUCTION_SITES, 1);
-							if (nearbySites.length > 0)
-								creep.build(nearbySites[0]);
-							else
-								creep.room.createConstructionSite(creep.pos.x, creep.pos.y, STRUCTURE_CONTAINER);
+
+							const nearbySites = pos.findInRange(FIND_CONSTRUCTION_SITES, 1);
+							if (nearbySites.length > 0) creep.build(nearbySites[0]);
+							else room.createConstructionSite(pos.x, pos.y, STRUCTURE_CONTAINER);
 						}
-					} else 
-						creep.harvestEnergy();
+					} else creep.harvestEnergy();
 				}
 			} else {
-				const rally = Game.flags[mem.rallyPoint];
-				if (creep.pos.isNearTo(rally)) mem.rallyPoint = 'none';
-				else creep.moveTo(rally, {visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'dashed' } } );
+				const rally = Game.flags[cMem.rallyPoint];
+				if (pos.isNearTo(rally)) cMem.rallyPoint = 'none';
+				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'dashed' } });
 			}
 		} else {
-			console.log('[' + creep.room.name + ']: WARNING: Creep ' + creep.name + '\'s AI is disabled.');
+			if (!Memory.globalSettings.alertDisabled)
+				console.log('[' + room.name + ']: WARNING: Creep ' + creep.name + '\'s AI is disabled.');
 			creep.say('AI Disabled');
 		}
 	}

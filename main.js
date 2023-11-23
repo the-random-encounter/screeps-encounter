@@ -49,69 +49,68 @@ class ROOM_HEAP_MEMORY {
 
 // define heap memory for use on various things and stuff
 global.HEAP_MEMORY = {
-	'TOWER_DATA': {
-		'652e4025c40f9d0858e95789': {
-			'maxDistance': 15
-		}
-	},
 	'containerCounter': 0,
 	'outpostRoomCounter': 0,
 	'outpostSourceCounter': 0,
 	'outpostCounter': 0,
-	'towerLRT': ""
+	'towerLRT': "",
+	'rooms': {
+		'W13N34': {}
+	}
 };
 
 // define pre-configured creep bodypart arrays as key/value pairs in an object
 const spawnVariants = {
-	'harvester200':		[ WORK, CARRY, MOVE	],
-	'harvester300':  	[	WORK, WORK,	CARRY, MOVE	],
-	'harvester400':  	[	WORK, WORK,	WORK, CARRY, MOVE	],
-	'harvester500': 	[	WORK, WORK,	WORK, CARRY, CARRY, MOVE, MOVE ],
-	'harvester800': 	[	WORK, WORK,	WORK,	WORK, WORK, WORK, CARRY, CARRY, MOVE ],
-	'harvester1000': 	[	WORK, WORK,	WORK,	WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE	],
+	'harvester200':		[ CARRY, MOVE, WORK ],
+	'harvester300':  	[	CARRY, MOVE, WORK, WORK ],
+	'harvester400':  	[	CARRY, MOVE, WORK, WORK, WORK ],
+	'harvester500': 	[ CARRY, CARRY, MOVE, MOVE,	WORK, WORK,	WORK ],
+	'harvester800': 	[ CARRY, CARRY, MOVE,	WORK, WORK,	WORK,	WORK, WORK, WORK ],
+	'harvester1000': 	[ CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, WORK, WORK,	WORK,	WORK, WORK, WORK ],
 	'collector100': 	[	CARRY, MOVE	],
 	'collector300': 	[	CARRY, CARRY, CARRY, MOVE, MOVE, MOVE	],
 	'collector500':  	[	CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE	],
 	'collector800':  	[	CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE ],
 	'collector1000': 	[	CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE,MOVE, MOVE, MOVE	],
-	'upgrader300': 		[ WORK, WORK, CARRY, MOVE ],
-	'upgrader400': 		[ WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE ],
-	'upgrader500': 		[	WORK, WORK, WORK, WORK, CARRY, MOVE	],
-	'upgrader550': 		[	WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE	],
-	'upgrader700':   	[	WORK, WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE	],
-	'upgrader1000':  	[	WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE ],
-	'builder300': 		[ WORK, CARRY, CARRY, MOVE, MOVE ],
-	'builder350': 		[ WORK, CARRY, CARRY, MOVE, MOVE, MOVE ],
-	'builder500':  	 	[	WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE ],
-	'builder800':  	 	[	WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE	],
-	'builder1000': 		[	WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE	],
-	'builder1600': 		[	WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE	],
-	'repairer300':   	[	WORK, WORK, CARRY, MOVE	],
-	'repairer500':   	[	WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE ],
-	'repairer800':   	[	WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE ],
-	'repairer1000':  	[	WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE ],
-	'repairer1400': 	[	WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE ],
-	'runner300': 			[	MOVE, MOVE, CARRY, CARRY, CARRY, CARRY ],
-	'runner500': 			[	MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY	],
-	'runner800': 			[	MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY ],
-	'warrior520': 		[ MOVE, MOVE, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, ATTACK, ATTACK, ATTACK ],
+	'upgrader300': 		[ CARRY, MOVE, WORK, WORK ],
+	'upgrader400': 		[ CARRY, CARRY, CARRY, MOVE, MOVE, WORK, WORK ],
+	'upgrader500': 		[	CARRY, MOVE, WORK, WORK, WORK, WORK ],
+	'upgrader550': 		[ CARRY, MOVE, MOVE, WORK, WORK, WORK, WORK ],
+	'upgrader700':   	[	CARRY, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK ],
+	'upgrader900':  	[	CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK ],
+	'builder300': 		[ CARRY, CARRY, MOVE, MOVE, WORK, ],
+	'builder350': 		[ CARRY, CARRY, MOVE, MOVE, MOVE, WORK ],
+	'builder500':  	 	[	CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, WORK, WORK ],
+	'builder800':  	 	[	CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK	],
+	'builder1000': 		[ CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK ],
+	'builder1100': 		[ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK ],
+	'builder1600': 		[	CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK ],
+	'repairer300':   	[	CARRY, MOVE, WORK, WORK],
+	'repairer500':   	[	CARRY, CARRY, MOVE, MOVE, WORK, WORK, WORK ],
+	'repairer800':   	[	CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK ],
+	'repairer1000':  	[ CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE,	WORK, WORK, WORK, WORK, WORK, WORK ],
+	'repairer1400': 	[ CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE,	WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK ],
+	'runner300': 			[ CARRY, CARRY, CARRY, CARRY,	MOVE, MOVE ],
+	'runner500': 			[ CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE ],
+	'runner800': 			[ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY,	MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE ],
 	'crane300': 			[ CARRY, CARRY, CARRY, CARRY, MOVE, MOVE ],
 	'crane500': 			[	CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE	],
-	'crane800': 			[ CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE ],
-	'remoteGuard700': [ TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,ATTACK,ATTACK,ATTACK,ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE ]
+	'crane800': 			[CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE],
+	'warrior520': 		[ TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK ],
+	'remoteGuard700': [ TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK ]
 }
 
 // define working variant set for use in the main loop, assigned based on current energy capacity limits
 let availableVariants = {
-	'harvester': 	[],
-	'collector': 	[],
-	'upgrader': 	[],
-	'builder': 		[],
-	'repairer': 	[],
-	'runner': 		[],
-	'warrior': 		[],
-	'crane': 			[],
-	'remoteGuard': []
+	'harvester': 		[],
+	'collector': 		[],
+	'upgrader': 		[],
+	'builder': 			[],
+	'repairer': 		[],
+	'runner': 			[],
+	'warrior': 			[],
+	'crane': 				[],
+	'remoteGuard': 	[]
 }
 
 // declare creep counting integers for spawning purposes
@@ -157,7 +156,6 @@ module.exports.loop = function () {
 		Memory.globalSettings = {};
 		Memory.globalSettings.consoleSpawnInterval = 10;
 	}
-	
 
 	calcTickTime();
 	
@@ -176,47 +174,44 @@ module.exports.loop = function () {
 			console.log('Clearing nonexistent creep memory: ', name);
 			// reset naming counter for type of creep that died
 			switch (role) {
-				case 'harvester':
-					harvesterCount = 0;
+				case 'builder':
+					builderCount = 0;
 					break;
 				case 'collector':
 					collectorCount = 0;
 					break;
-				case 'upgrader':
-					upgraderCount = 0;
-					break;
-				case 'builder':
-					builderCount = 0;
-					break;
-				case 'runner':
-					runnerCount = 0;
-					break;
-				case 'repairer':
-					repairerCount = 0;
-					break;
 				case 'crane':
 					craneCount = 0;
 					break;
-				case 'ranger':
-					rangerCount = 0;
-					break;
-				case 'warrior':
-					warriorCount = 0;
+				case 'harvester':
+					harvesterCount = 0;
 					break;
 				case 'healer':
 					healerCount = 0;
 					break;
-				case 'reserver':
-					reserverCount = 0;
+				case 'miner':
+					minerCount = 0;
+					break;
+				case 'ranger':
+					rangerCount = 0;
 					break;
 				case 'rebooter':
 					rebooterCount = 0;
 					break;
-				case 'remoteharvester':
-					remoteHarvesterCount = 0;
+				case 'repairer':
+					repairerCount = 0;
 					break;
-				case 'remoterunner':
-					remoteRunnerCount = 0;
+				case 'reserver':
+					reserverCount = 0;
+					break;
+				case 'runner':
+					runnerCount = 0;
+					break;
+				case 'upgrader':
+					upgraderCount = 0;
+					break;
+				case 'warrior':
+					warriorCount = 0;
 					break;
 				case 'remotebuilder':
 					remoteBuilderCount = 0;
@@ -224,8 +219,11 @@ module.exports.loop = function () {
 				case 'remoteguard':
 					remoteGuardCount = 0;
 					break;
-				case 'miner':
-					minerCount = 0;
+				case 'remoteharvester':
+					remoteHarvesterCount = 0;
+					break;
+				case 'remoterunner':
+					remoteRunnerCount = 0;
 					break;
 			}
 		}
@@ -255,11 +253,11 @@ module.exports.loop = function () {
 		// code to run if room contains a controller owned by us
 		if (room && room.controller && room.controller.my) {
 			
-			const data 			= room.memory.data;
-			const objects 	= room.memory.objects;
-			const settings 	= room.memory.settings;
-			const flags 		= room.memory.settings.flags;
-			const colonies 	= Memory.colonies;
+			const data = room.memory.data;
+			const objects = room.memory.objects;
+			const settings = room.memory.settings;
+			const flags = room.memory.settings.flags;
+			const colonies = Memory.colonies;
 
 			if (tickCount > 0 && tickCount % 1000 == 0) {
 				console.log('MAIN LOOP, CACHING OBJECTS EVERY 1000 TICKS --- Tick#: ' + tickCount);
@@ -301,10 +299,10 @@ module.exports.loop = function () {
 
 			const roomName = room.name;
 
-			if (room.memory.objects === undefined)	room.cacheObjects();
-			if (!room.memory.settings) 							room.initSettings();
-			if (!room.memory.settings.flags)				room.initFlags();
-			if (!room.memory.targets)								room.initTargets();
+			if (room.memory.objects === undefined) room.cacheObjects();
+			if (!room.memory.settings) room.initSettings();
+			if (!room.memory.settings.flags) room.initFlags();
+			if (!room.memory.targets) room.initTargets();
 
 			const spawn = Game.getObjectById(room.memory.objects.spawns[0]);
 			
@@ -313,7 +311,6 @@ module.exports.loop = function () {
 
 			/* #region ROOM LINK LOGIC */
 			if (room.memory.objects.links) {
-				console.log('Link logic');
 
 				if (room.memory.data.linkRegistry === undefined)
 					room.registerLinks();
@@ -358,42 +355,37 @@ module.exports.loop = function () {
 					}
 				}
 				if (linkCentral && linkDest) {
-					if ((linkCentral.store[RESOURCE_ENERGY] > 99) && linkCentral.cooldown == 0/* && (linkDest.store.getFreeCapacity() >= linkCentral.store.getUsedCapacity())*/) {
-						//console.log('Fired CtoD (' + linkCentral.store[RESOURCE_ENERGY] + '/ ' + linkDest.store[RESOURCE_ENERGY] + ')');
+					if ((linkCentral.store[RESOURCE_ENERGY] > 99) && linkCentral.cooldown == 0 && linkDest.store[RESOURCE_ENERGY] < 401) {
 						linkCentral.transferEnergy(linkDest);
 					}
 				}
 			}
-			/* #endregion */
 
-			/* #region  SPAWNING QUOTA & CURRENT SPAWN COUNT DECLARATIONS  */
+			// SPAWNING QUOTA & CURRENT SPAWN COUNT DECLARATIONS 
 			// pull creep role caps from room memory, or set to default value if none are set
 			let harvesterTarget = _.get(room.memory, ['targets', 'harvester'], 2);
 			let collectorTarget = _.get(room.memory, ['targets', 'collector'], 2);
 			let upgraderTarget 	= _.get(room.memory, ['targets', 'upgrader'	], 2);
 			let builderTarget 	= _.get(room.memory, ['targets', 'builder'	], 2);
 			let repairerTarget 	= _.get(room.memory, ['targets', 'repairer'	], 1);
-			let runnerTarget 		= _.get(room.memory, ['targets', 'runner'		], 0);
+			let runnerTarget 		= _.get(room.memory, ['targets', 'runner'		], 3);
 			let rebooterTarget 	= _.get(room.memory, ['targets', 'rebooter'	], 0);
 			let reserverTarget 	= _.get(room.memory, ['targets', 'reserver'	], 0);
-			let rangerTarget 		= _.get(room.memory, ['targets', 'ranger'		], 1);
-			let warriorTarget 	= _.get(room.memory, ['targets', 'warrior'	], 1);
-			let healerTarget 		= _.get(room.memory, ['targets', 'healer'		], 1);
-			let craneTarget 		= _.get(room.memory, ['targets', 'crane'		], 1);
-			let minerTarget 		= _.get(room.memory, ['targets', 'miner'		], 1);
-			let scientistTarget = _.get(room.memory, ['targets', 'scientist'], 1);
-			let scoutTarget 		= _.get(room.memory, ['targets', 'scout'		], 1);
+			let rangerTarget 		= _.get(room.memory, ['targets', 'ranger'		], 0);
+			let warriorTarget 	= _.get(room.memory, ['targets', 'warrior'	], 0);
+			let healerTarget 		= _.get(room.memory, ['targets', 'healer'		], 0);
+			let craneTarget 		= _.get(room.memory, ['targets', 'crane'		], 0);
+			let minerTarget 		= _.get(room.memory, ['targets', 'miner'		], 0);
+			let scientistTarget = _.get(room.memory, ['targets', 'scientist'], 0);
+			let scoutTarget 		= _.get(room.memory, ['targets', 'scout'		], 0);
 
 			
 			let remoteHarvesterTarget;
-			if (room.memory.outposts)
-				remoteHarvesterTarget = room.memory.outposts.aggregateSourceList.length;
-			else
-				remoteHarvesterTarget = _.get(room.memory, ['targets', 'remoteharvester'], 1);
-			 
-			let remoteRunnerTarget 	= _.get(room.memory, ['targets', 'remoterunner'		], 1);
-			let remoteBuilderTarget = _.get(room.memory, ['targets', 'remotebuilder'	], 1);
-			let remoteGuardTarget 	= _.get(room.memory, ['targets', 'remoteguard'		], 1);
+			if (room.memory.outposts) remoteHarvesterTarget = room.memory.outposts.aggregateSourceList.length;
+			else remoteHarvesterTarget 	= _.get(room.memory, ['targets', 'remoteharvester'], 1);
+			let remoteRunnerTarget 			= _.get(room.memory, ['targets', 'remoterunner'		], 1);
+			let remoteBuilderTarget 		= _.get(room.memory, ['targets', 'remotebuilder'	], 1);
+			let remoteGuardTarget 			= _.get(room.memory, ['targets', 'remoteguard'		], 1);
 
 			// pull current amount of creeps alive by roleForQuota
 			let harvesters 	= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'harvester' && creep.memory.homeRoom == roomName);
@@ -420,16 +412,20 @@ module.exports.loop = function () {
 			let sites = room.find(FIND_CONSTRUCTION_SITES);
 
 			// Select a non-geriatric collector to loot compounds or energy from enemy corpses
-			if (room.find(FIND_HOSTILE_CREEPS).length) {
-				if (collectors.length) {
-					for (let i = 0; i < collectors.length; i++) {
-						if (collectors[i].ticksToLive > 300) {
-							collectors[i].memory.invaderLooter = true;
-							console.log(collectors[i] + ' is now the invader looter');
-							break;
+			let invaderLooterAnnounced = false;
+			if (invaderLooterAnnounced = false) {
+				if (room.find(FIND_HOSTILE_CREEPS).length) {
+					if (collectors.length) {
+						for (let i = 0; i < collectors.length; i++) {
+							if (collectors[i].ticksToLive > 300) {
+								collectors[i].memory.invaderLooter = true;
+								console.log(collectors[i] + ' is now the invader looter');
+								invaderLooterAnnounced = true;
+								break;
+							}
 						}
 					}
-				}
+				} else invaderLooterAnnounced = false;
 			}
 			
 			// CONSOLE SPAWN INFO
@@ -493,72 +489,72 @@ module.exports.loop = function () {
 				capacity = room.energyCapacityAvailable;
 
 			if (room.energyCapacityAvailable == 300) {
-				availableVariants.harvester 	= spawnVariants.harvester300;
-				availableVariants.collector 	= spawnVariants.collector100;
-				availableVariants.upgrader 		= spawnVariants.upgrader300;
-				availableVariants.builder 		= spawnVariants.builder300;
-				availableVariants.repairer 		= spawnVariants.repairer300;
-				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane300;
+				availableVariants.harvester = spawnVariants.harvester300;
+				availableVariants.collector = spawnVariants.collector100;
+				availableVariants.upgrader = spawnVariants.upgrader300;
+				availableVariants.builder = spawnVariants.builder300;
+				availableVariants.repairer = spawnVariants.repairer300;
+				availableVariants.runner = spawnVariants.runner300;
+				availableVariants.crane = spawnVariants.crane300;
 			} else if (room.energyCapacityAvailable <= 400) {
-				availableVariants.harvester 	= spawnVariants.harvester400;
-				availableVariants.collector 	= spawnVariants.collector300;
-				availableVariants.upgrader 		= spawnVariants.upgrader400;
-				availableVariants.builder 		= spawnVariants.builder350;
-				availableVariants.repairer 		= spawnVariants.repairer300;
-				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane300;
-			}	else if (room.energyCapacityAvailable <= 500) {
-				availableVariants.harvester 	= spawnVariants.harvester400;
-				availableVariants.collector 	= spawnVariants.collector300;
-				availableVariants.upgrader 		= spawnVariants.upgrader400;
-				availableVariants.builder 		= spawnVariants.builder500;
-				availableVariants.repairer 		= spawnVariants.repairer300;
-				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane300;
+				availableVariants.harvester = spawnVariants.harvester400;
+				availableVariants.collector = spawnVariants.collector300;
+				availableVariants.upgrader = spawnVariants.upgrader400;
+				availableVariants.builder = spawnVariants.builder350;
+				availableVariants.repairer = spawnVariants.repairer300;
+				availableVariants.runner = spawnVariants.runner300;
+				availableVariants.crane = spawnVariants.crane300;
+			} else if (room.energyCapacityAvailable <= 500) {
+				availableVariants.harvester = spawnVariants.harvester400;
+				availableVariants.collector = spawnVariants.collector300;
+				availableVariants.upgrader = spawnVariants.upgrader400;
+				availableVariants.builder = spawnVariants.builder500;
+				availableVariants.repairer = spawnVariants.repairer300;
+				availableVariants.runner = spawnVariants.runner300;
+				availableVariants.crane = spawnVariants.crane300;
 			} else if (room.energyCapacityAvailable <= 800) {
-				availableVariants.harvester 	= spawnVariants.harvester500;
-				availableVariants.collector 	= spawnVariants.collector500;
-				availableVariants.upgrader 		= spawnVariants.upgrader550;
-				availableVariants.builder 		= spawnVariants.builder500;
-				availableVariants.repairer 		= spawnVariants.repairer500;
-				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.warrior 		= spawnVariants.warrior520;
-				availableVariants.crane 			= spawnVariants.crane500;
+				availableVariants.harvester = spawnVariants.harvester500;
+				availableVariants.collector = spawnVariants.collector500;
+				availableVariants.upgrader = spawnVariants.upgrader550;
+				availableVariants.builder = spawnVariants.builder500;
+				availableVariants.repairer = spawnVariants.repairer500;
+				availableVariants.runner = spawnVariants.runner300;
+				availableVariants.warrior = spawnVariants.warrior520;
+				availableVariants.crane = spawnVariants.crane500;
 			} else if (room.energyCapacityAvailable <= 1000) {
-				availableVariants.harvester 	= spawnVariants.harvester800;
-				availableVariants.collector 	= spawnVariants.collector500;
-				availableVariants.upgrader 		= spawnVariants.upgrader700;
-				availableVariants.builder 		= spawnVariants.builder800;
-				availableVariants.repairer 		= spawnVariants.repairer800;
-				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane500;
+				availableVariants.harvester = spawnVariants.harvester800;
+				availableVariants.collector = spawnVariants.collector500;
+				availableVariants.upgrader = spawnVariants.upgrader700;
+				availableVariants.builder = spawnVariants.builder800;
+				availableVariants.repairer = spawnVariants.repairer800;
+				availableVariants.runner = spawnVariants.runner300;
+				availableVariants.crane = spawnVariants.crane500;
 				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
 			} else if (room.energyCapacityAvailable <= 1300) {
-				availableVariants.harvester 	= spawnVariants.harvester800;
-				availableVariants.collector 	= spawnVariants.collector500;
-				availableVariants.upgrader 		= spawnVariants.upgrader700;
-				availableVariants.builder 		= spawnVariants.builder1000;
-				availableVariants.repairer 		= spawnVariants.repairer1000;
-				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane500;
+				availableVariants.harvester = spawnVariants.harvester800;
+				availableVariants.collector = spawnVariants.collector500;
+				availableVariants.upgrader = spawnVariants.upgrader700;
+				availableVariants.builder = spawnVariants.builder1000;
+				availableVariants.repairer = spawnVariants.repairer1000;
+				availableVariants.runner = spawnVariants.runner300;
+				availableVariants.crane = spawnVariants.crane500;
 				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
 			} else if (room.energyCapacityAvailable > 1600) {
-				availableVariants.harvester 	= spawnVariants.harvester800;
-				availableVariants.collector 	= spawnVariants.collector500;
-				availableVariants.upgrader 		= spawnVariants.upgrader700;
-				availableVariants.builder 		= spawnVariants.builder1000;
-				availableVariants.repairer 		= spawnVariants.repairer1000;
-				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane500;
+				availableVariants.harvester = spawnVariants.harvester800;
+				availableVariants.collector = spawnVariants.collector500;
+				availableVariants.upgrader = spawnVariants.upgrader900;
+				availableVariants.builder = spawnVariants.builder1100;
+				availableVariants.repairer = spawnVariants.repairer1000;
+				availableVariants.runner = spawnVariants.runner300;
+				availableVariants.crane = spawnVariants.crane500;
 				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
 			}
 			if (room.memory.settings.flags.craneUpgrades == true) availableVariants.crane = spawnVariants.crane800;
 			if (Game.shard.ptr) availableVariants.builder = spawnVariants.builder300;
-			
+			if (room.energyAvailable <= 300 && room.storage[RESOURCE_ENERGY] <= 1000 && creepCount <= 1) spawnVariants.harvester300;
 			// if we have no collectors, and our energy supply is not enough for a 500 energy spawn, do a 300.
-			if (!collectors.length) {
-				if (capacity < 500)
+			if (collectors.length == 0) {
+				if (room.energyAvailable < 500)
 					availableVariants.collector = spawnVariants.collector300;
 			}
 
@@ -634,22 +630,38 @@ module.exports.loop = function () {
 					break;
 				}
 			}
-			
-			// SPAWN MANAGEMENT SYSTEM
+
+			// _________________________________________________________________________________________________________________________________
+			// #################################################### SPAWN MANAGEMENT SYSTEM ####################################################
+			// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 			let readySpawn = spawn;
 
 			for (let i = 0; i < room.memory.objects.spawns.length; i++) {
 				const thisSpawn = Game.getObjectById(room.memory.objects.spawns[i]);
 
-				if (thisSpawn.spawning)	continue;
+				if (thisSpawn.spawning) continue;
 				else readySpawn = thisSpawn;
 			}
 
-			if (creepCount == 0 && rebooters.length < 1 && room.memory.objects.storage && GOBI(room.memory.objects.storage[0]).store[RESOURCE_ENERGY] <= 1000) {
+			if (creepCount == 0 && room.energyAvailable() <= 300 && (!room.memory.objects.storage || room.storage.store[RESOURCE_ENERGY] < 500)) {
 				newName = 'Rb' + (rebooters.length + 1);
 				while (readySpawn.spawnCreep([WORK, WORK, MOVE, CARRY], newName, { memory: { role: 'rebooter', roleForQuota: 'rebooter' } }) == ERR_NAME_EXISTS) {
 					newName = 'Rb' + (rebooters.length + 1 + rebooterCount);
 					rebooterCount++;
+				}
+			} else if (Game.creeps.length <= 1 && room.energyAvailable() <= 300 && room.storage.store[RESOURCE_ENERGY] >= 500) {
+				const result = readySpawn.spawnCreep([CARRY, MOVE], 'Collie the Emergency Collector Creep', { memory: { role: 'collector', homeRoom: roomName } });
+				switch (result) {
+					case OK:
+					case ERR_BUSY:
+					case ERR_NOT_ENOUGH_ENERGY:
+					case ERR_INVALID_ARGS:
+					case ERR_RCL_NOT_ENOUGH:
+						break;
+					case ERR_NAME_EXISTS:
+						readySpawn.spawnCreep([CARRY, MOVE], 'Collie the Emergency Collector Back-up Creep', { memory: { role: 'collector', homeRoom: roomName } });
+						break;					
 				}
 			} else {
 				if ((harvesters.length < harvesterTarget) || (harvesters.length <= harvesterTarget && harvesterDying && harvesterTarget !== 0)) {
@@ -782,20 +794,24 @@ module.exports.loop = function () {
 						console.log('[' + room.name + ' ' + spawnObjects[i].name + ']: Spawning new creep: ' + spawningCreep.memory.role + ' (' + spawningCreep.name + ')');
 						spawnAnnounced = true;
 					}
-					spawnObjects[i].room.visual.text('     ' + spawningCreep.memory.role + ' - ' + spawnObjects[i].spawning.remainingTime + '/' + spawnObjects[i].spawning.needTime, spawnObjects[i].pos.x + 1, spawnObjects[i].pos.y - 1, { stroke: '#111111', color: '#ff00ff', align: 'left', opacity: 0.8, font: 0.4 });
+					spawnObjects[i].room.visual.text('     ' + spawningCreep.memory.role + ' - ' + spawnObjects[i].spawning.remainingTime + '/' + spawnObjects[i].spawning.needTime, spawnObjects[i].pos.x, spawnObjects[i].pos.y + 1.25, { stroke: '#111111', color: '#ff00ff', align: 'center', opacity: 0.8, font: 0.4 });
 				} else {
 					spawnAnnounced = false;
 				}
 			}
 
-			if (room.controller.level > 1)
+			if (room.controller.level >= 1)
 				visualRCProgress(room.controller);
 			
 			room.visual.text('     Energy: ' + room.energyAvailable
 			+ '/' + room.energyCapacityAvailable,
-			readySpawn.pos.x + 1,
-			readySpawn.pos.y - 2,
-			{ align: 'left', opacity: 0.5, color: '#aa5500', stroke: '#111111', font: 0.4 });
+			readySpawn.pos.x,
+			readySpawn.pos.y - 1,
+				{ align: 'center', opacity: 0.8, color: '#00dddd', stroke: '#000000', font: 0.4 });
+			
+			if (room.storage) {
+				room.visual.text(' Storage: ' + room.storage.store[RESOURCE_ENERGY], room.storage.pos.x, room.storage.pos.y - 1, { align: 'center', opacity: 0.8, font: 0.4, stroke: '#000000', color: '#ffff00'})
+			}
 			//console.log('[' + room.name + ']: Consumed ' + Game.cpu.getUsed().toFixed(3) + ' this tick.');
 		} // end of (for each room owned by player code)
 

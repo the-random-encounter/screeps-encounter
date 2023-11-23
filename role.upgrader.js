@@ -3,129 +3,136 @@ const roleUpgrader = {
 			/** @param {Creep} creep **/
 		run: function(creep) {
 		
-		if (creep.memory.disableAI === undefined)
-			creep.memory.disableAI = false;
+		const room = creep.room;
+		const cMem = creep.memory;
+		const rMem = room.memory;
+		const pos = creep.pos;
 
-		if (creep.memory.upgradeRoom === undefined)
-			creep.memory.upgradeRoom = creep.room.name;
-
-		if (creep.memory.canSeekEnergy === undefined) {
-			if (creep.room.memory.settings.flags.upgradersSeekEnergy !== undefined)
-				creep.memory.canSeekEnergy = creep.room.memory.settings.flags.upgradersSeekEnergy;
-			else
-				creep.memory.canSeekEnergy = true;
+		if (cMem.disableAI === undefined) cMem.disableAI = false;
+		if (cMem.rallyPoint === undefined) cMem.rallyPoint = 'none';
+		if (cMem.upgradeRoom === undefined) cMem.upgradeRoom = room.name;
+		if (cMem.canSeekEnergy === undefined) {
+			if (rMem.settings.flags.upgradersSeekEnergy !== undefined) cMem.canSeekEnergy = rMem.settings.flags.upgradersSeekEnergy;
+			else cMem.canSeekEnergy = true;
 		}
 
-		if (!creep.memory.mainBucket) {
-			if (creep.room.memory.data.linkRegistry && creep.room.memory.data.linkRegistry.destination !== undefined)
-				creep.memory.mainBucket = creep.room.memory.data.linkRegistry.destination;
-			else if (creep.room.memory.settings.containerSettings.inboxes !== undefined)
-				creep.memory.mainBucket = creep.room.memory.settings.containerSettings.inboxes[0];
+		if (!cMem.mainBucket) {
+
+			if (rMem.data.linkRegistry && rMem.data.linkRegistry.destination !== undefined)	cMem.mainBucket = rMem.data.linkRegistry.destination;	
+			else if (rMem.settings.containerSettings.inboxes !== undefined) cMem.mainBucket = rMem.settings.containerSettings.inboxes[0];
+				
 			else {
-				const nearbyBuckets = creep.room.controller.pos.findInRange(FIND_STRUCTURES, 1, { filter: (i) => i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE });
-				const closestBucket = creep.room.controller.pos.findClosestByRange(nearbyBuckets);
-				if (closestBucket)
-					creep.memory.mainBucket = closestBucket.id;
-				else
-					creep.memory.mainBucket = 'none';
+
+				const nearbyBuckets = room.controller.pos.findInRange(FIND_STRUCTURES, 1, { filter: (i) => i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE });
+				const closestBucket = room.controller.pos.findClosestByRange(nearbyBuckets);
+
+				if (closestBucket) cMem.mainBucket = closestBucket.id;
+				else cMem.mainBucket = 'none';
 			}
 		}
 				
-		if (!creep.memory.disableAI) {
+		if (!cMem.disableAI) {
 
-			const upgradeRoom = creep.memory.upgradeRoom;
+			if (cMem.rallyPoint == 'none') { // I HAVE NO RALLY POINT, SO...
 
-			if (creep.ticksToLive <= 2) {
-				creep.say('☠️');
-				creep.transfer(Game.getObjectById(creep.memory.mainBucket), RESOURCE_ENERGY);
-			}
+				const upgradeRoom = cMem.upgradeRoom;
 
-			if (creep.memory.working && creep.store[RESOURCE_ENERGY] == 0) {
-				creep.memory.working = false;
-				creep.say('🔼');
-			}
-
-			if (!creep.memory.working && creep.store.getFreeCapacity() == 0) {
-				creep.memory.working = true;
-				creep.say('⚡');
-			}
-			
-			// IF STANDING ON ROOM EXIT, STEP OFF
-			if (creep.pos.x == 49) creep.move(7);
-			else if (creep.pos.x == 0) creep.move(3);
-			if (creep.pos.y == 0) creep.move(5);
-			else if (creep.pos.y == 49) creep.move(1)
-
-			if (creep.store.getUsedCapacity() == 0) { // I HAVE NO ENERGY, SO...
-				
-				if (!creep.memory.mainBucket) { // I HAVE NO MAIN BUCKET IN MEMORY, SO...
-
-					const adjacentBucket = creep.pos.findInRange(FIND_STRUCTURES, 1, { filter: (i) => i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE} );
-					
-					if (adjacentBucket.length > 1) { // MULTIPLE BUCKETS! WINNOW IT DOWN...
-						creep.memory.mainBucket = adjacentBucket.pos.findClosestByRange(FIND_STRUCTURES, { filter: (i) => i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE} ).id;
-					} else if (adjacentBucket.length <= 1) // IF THERE'S ONE NEXT TO ME, THAT'S MY MAIN BUCKET.
-						creep.memory.mainBucket = adjacentBucket.id;
-				} // end of (if there is no mainBucket in memory)
-				const mainBucket = Game.getObjectById(creep.memory.mainBucket);
-				if (mainBucket) { // MY MAIN BUCKET IS HERE AND ISN'T EMPTY, SO...
-					creep.moveTo(creep.room.controller);
-					if (creep.withdraw(mainBucket, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) // WITHDRAW FROM IT
-						creep.moveTo(mainBucket, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });	
-				} // end of (if main bucket is present & not empty)
-				else if (creep.memory.canSeekEnergy) { // MY MAIN BUCKET EITHER ISN'T HERE OR IT'S EMPTY, LET'S FIND ENERGY ELSEWHERE...
-
-					const containersWithEnergy = creep.room.find(FIND_STRUCTURES, {
-						filter: (i) => (i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_STORAGE || i.structureType == STRUCTURE_CONTAINER) && i.store[RESOURCE_ENERGY] > 0
-					});
-					const piles = creep.room.find(FIND_DROPPED_RESOURCES);
-					//let controllerContainers = creep.room.controller.pos.findInRange(FIND_STRUCTURES, 5, { filter: { strucutreType: STRUCTURE_CONTAINER } });
-				
-					const all = containersWithEnergy.concat(piles);
-					//all = all.concat(controllerContainers);
-					const target = creep.pos.findClosestByRange(all);
-			
-					if (target) { // I FOUND SOME ENERGY SOMEWHERE, LET'S GET IT
-						if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || creep.pickup(target) == ERR_NOT_IN_RANGE)
-							creep.moveTo(target, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
-					}
-				} // end of (no bucket or bucket energy, find other source)
-			} // end of (find energy if empty)	
-			else { // I HAVE ENERGY, LET'S UPGRADE THE CONTROLLER, IF MY BUCKET DOESN'T NEED FIXING FIRST...
-            
-			/*if (creep.room.name !== upgradeRoom) { // AM I IN THE ROOM I'M TOLD TO UPGRADE? IF NOT, GO THERE
-				creep.moveTo(Game.flags.ClaimFlag);
-			} else { // CHECK MY BUCKET DOESN'T HAVE A LEAK...*/
-				if (!creep.memory.mainBucket) {
-					const containers = creep.room.controller.pos.findInRange(FIND_STRUCTURES, 5, { filter: (i) => i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE});
-					const closestContainer = creep.pos.findClosestByRange(containers);
-					creep.memory.mainBucket = closestContainer.id;
+				if (creep.ticksToLive <= 3) {
+					creep.say('☠️');
+					if (creep.store.getUsedCapacity() > 0)
+						if (creep.transfer(Game.getObjectById(cMem.mainBucket), RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
+							creep.moveTo(Game.getObjectById(cMem.mainBucket));
 				}
-				const mainBucket = Game.getObjectById(creep.memory.mainBucket);
-				if (mainBucket && mainBucket.structureType == STRUCTURE_CONTAINER) {
-					if (mainBucket.hits < mainBucket.hitsMax) // I FOUND A LEAK, FIX IT
-						creep.repair(mainBucket);
-					else {
-						if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-							creep.moveTo(creep.room.controller, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
-							//console.log('got energy');
+
+				if (cMem.working && creep.store[RESOURCE_ENERGY] == 0) {
+					cMem.working = false;
+					creep.say('🔼');
+				}
+
+				if (!cMem.working && creep.store.getFreeCapacity() == 0) {
+					cMem.working = true;
+					creep.say('⚡');
+				}
+			
+				// IF STANDING ON ROOM EXIT, STEP OFF
+				if (pos.x == 49) creep.move(7);
+				else if (pos.x == 0) creep.move(3);
+				if (pos.y == 0) creep.move(5);
+				else if (pos.y == 49) creep.move(1)
+
+				if (creep.store.getUsedCapacity() == 0) { // I HAVE NO ENERGY, SO...
+				
+					if (!cMem.mainBucket) { // I HAVE NO MAIN BUCKET IN MEMORY, SO...
+
+						const adjacentBucket = pos.findInRange(FIND_STRUCTURES, 1, { filter: (i) => i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE });
+					
+						if (adjacentBucket.length > 1) { // MULTIPLE BUCKETS! WINNOW IT DOWN...
+
+							cMem.mainBucket = adjacentBucket.pos.findClosestByRange(FIND_STRUCTURES, { filter: (i) => i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE }).id;
+						
+						} else if (adjacentBucket.length <= 1) cMem.mainBucket = adjacentBucket.id;
+					}
+				
+					const mainBucket = Game.getObjectById(cMem.mainBucket);
+				
+					if (mainBucket) { // MY MAIN BUCKET IS HERE AND ISN'T EMPTY, SO...
+
+						if (pos.findInRange(FIND_STRUCTURES, 2, { filter: { structureType: STRUCTURE_CONTROLLER } }).length == 0) creep.moveTo(room.controller);
+					
+						if (creep.withdraw(mainBucket, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(mainBucket, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+					}
+
+					else if (cMem.canSeekEnergy) { // MY MAIN BUCKET EITHER ISN'T HERE OR IT'S EMPTY, LET'S FIND ENERGY ELSEWHERE...
+
+						const containersWithEnergy = room.find(FIND_STRUCTURES, {
+							filter: (i) => (i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_STORAGE || i.structureType == STRUCTURE_CONTAINER) && i.store[RESOURCE_ENERGY] > 0
+						});
+						const piles = room.find(FIND_DROPPED_RESOURCES);
+						const all = containersWithEnergy.concat(piles);
+						const target = pos.findClosestByRange(all);
+			
+						if (target) { // I FOUND SOME ENERGY SOMEWHERE, LET'S GET IT
+
+							if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE || creep.pickup(target) == ERR_NOT_IN_RANGE)
+								creep.moveTo(target, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+						}
+					}
+				}	else { // I HAVE ENERGY, LET'S UPGRADE THE CONTROLLER, IF MY BUCKET DOESN'T NEED FIXING FIRST...
+
+					if (!cMem.mainBucket) {
+
+						const containers = room.controller.pos.findInRange(FIND_STRUCTURES, 5, { filter: (i) => i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE });
+						const closestContainer = pos.findClosestByRange(containers);
+						cMem.mainBucket = closestContainer.id;
+					}
+
+					const mainBucket = Game.getObjectById(cMem.mainBucket);
+
+					if (mainBucket && mainBucket.structureType == STRUCTURE_CONTAINER) {
+
+						if (mainBucket.hits < mainBucket.hitsMax) creep.repair(mainBucket);
+						else {
+
+							if (creep.upgradeController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 						}
 					}
 				}
 			
-			} 
-			if (creep.store.getUsedCapacity() !== 0) {
-		        if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-					creep.moveTo(creep.room.controller, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
-	        }
-	    
-			} // end of (fix bucket/upgrade controller)
-		} // end of (disableAI is disabled)
-		else {
-			console.log('[' + creep.room.name + ']: WARNING: Creep ' + creep.name + '\'s AI is disabled.');
+				if (creep.store.getUsedCapacity() !== 0) {
+					if (creep.upgradeController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+				}
+
+			} else { // I HAVE A RALLY POINT, LET'S BOOGY!
+				const rally = Game.flags[cMem.rallyPoint];
+				if (pos.isNearTo(rally)) cMem.rallyPoint = 'none';
+				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+			}
+		}	else { // AI IS DISABLED
+			if (!Memory.globalSettings.alertDisabled)
+				console.log('[' + room.name + ']: WARNING: Creep ' + creep.name + '\'s AI is disabled.');
 			creep.say('AI Disabled');
-		} // end of (disableAI is enabled)
-	} // end of (run function)
-};// end of (role)
+		}
+	}
+}
 
 module.exports = roleUpgrader;
