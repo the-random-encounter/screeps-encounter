@@ -88,7 +88,9 @@ const spawnVariants = {
 	'crane500':	[ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ],
 	'crane800':	[ CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE ],
 	'warrior520':	[ TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK ],
-	'remoteGuard700':	[ TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK ]
+	'remoteGuard700':	[ TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK ],
+	'remoteLogistician1200': [ CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE ],
+	'remoteLogistician1500': [ CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE ]
 }
 
 // define working variant set for use in the main loop, assigned based on current energy capacity limits
@@ -119,13 +121,13 @@ let healerCount 	= 0;
 let craneCount 		= 0;
 let minerCount		= 0;
 let scientistCount 	= 0;
-let scoutCount 		= 0;
+let scoutCount = 0;
 
+let remoteLogisticianCount = 0;
 let remoteHarvesterCount 	= 0;
 let remoteRunnerCount 		= 0;
 let remoteBuilderCount 		= 0;
 let remoteGuardCount 		= 0;
-let remoteLogistician 		= 0;
 
 // declare other global variables
 let tickCount = 0;
@@ -216,6 +218,9 @@ module.exports.loop = function () {
 					break;
 				case 'remoterunner':
 					remoteRunnerCount = 0;
+					break;
+				case 'remotelogistician':
+					remoteLogisticianCount = 0;
 					break;
 			}
 		}
@@ -363,6 +368,7 @@ module.exports.loop = function () {
 			let remoteRunnerTarget 			= _.get(room.memory, ['targets', 'remoterunner'		], 1);
 			let remoteBuilderTarget 		= _.get(room.memory, ['targets', 'remotebuilder'	], 1);
 			let remoteGuardTarget 			= _.get(room.memory, ['targets', 'remoteguard'		], 1);
+			let remoteLogisticianTarget = _.get(room.memory, ['targets', 'remotelogistician'], 1);
 
 			// pull current amount of creeps alive by roleForQuota
 			let harvesters 	= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'harvester' && creep.memory.homeRoom == roomName);
@@ -385,6 +391,7 @@ module.exports.loop = function () {
 			let remoteRunners 		= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'remoterunner' 		&& creep.memory.homeRoom == roomName);
 			let remoteBuilders 		= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'remotebuilder' 	&& creep.memory.homeRoom == roomName);
 			let remoteGuards 			= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'remoteguard' 		&& creep.memory.homeRoom == roomName);
+			let remoteLogisticians = _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'remotelogistician' && creep.memory.homeRoom == roomName);
 
 			let sites = room.find(FIND_CONSTRUCTION_SITES);
 
@@ -519,7 +526,8 @@ module.exports.loop = function () {
 				availableVariants.repairer 	= spawnVariants.repairer1000;
 				availableVariants.runner 	= spawnVariants.runner300;
 				availableVariants.crane 	= spawnVariants.crane500;
-				availableVariants.remoteGuard 	= spawnVariants.remoteGuard700;
+				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
+				availableVariants.remoteLogistician = spawnVariants.remoteLogistician1200;
 			} else if (room.energyCapacityAvailable > 1600) {
 				availableVariants.harvester 	= spawnVariants.harvester600;
 				availableVariants.collector 	= spawnVariants.collector500;
@@ -529,6 +537,7 @@ module.exports.loop = function () {
 				availableVariants.runner 	= spawnVariants.runner300;
 				availableVariants.crane 	= spawnVariants.crane500;
 				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
+				availableVariants.remoteLogistician = spawnVariants.remoteLogistician1500;
 			}
 
 			if (room.memory.settings.flags.craneUpgrades == true) availableVariants.crane = spawnVariants.crane800;
@@ -727,6 +736,12 @@ module.exports.loop = function () {
 						while (readySpawn.spawnCreep(availableVariants.remoteGuard, newName, { memory: { role: 'remoteguard', roleForQuota: 'remoteguard', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 							newName = 'RG' + (remoteGuards.length + 1 + remoteGuardCount);
 							remoteGuardCount++;
+						}
+					} else if (remoteLogisticians.length < remoteLogisticianTarget) {
+						newName = 'RL' + (remoteLogisticians.length + 1);
+						while (readySpawn.spawnCreep(availableVariants.remoteLogistician, newName, { memory: { role: 'remotelogistician', roleForQuota: 'remotelogistician', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
+							newName = 'RL' + (remoteLogisticians.length + 1 + remoteLogisticianCount);
+							remoteLogisticianCount++;
 						}
 					} else {
 						//RESERVERS/REMOTE RUNNERS/HARVESTERS/BUILDERS/GUARDS are at quota, move on to defensive creeps:
