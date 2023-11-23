@@ -32,7 +32,7 @@ Room.prototype.cacheObjects 							= function() {
 	const sources 			= this.find(FIND_SOURCES	);
 	const minerals 			= this.find(FIND_MINERALS	);
 	const deposits 			= this.find(FIND_DEPOSITS	);
-	const allStructures = this.find(FIND_STRUCTURES, { filter: (i) => 								i.structureType == STRUCTURE_CONTROLLER ||	i.structureType == STRUCTURE_SPAWN 	||	i.structureType == STRUCTURE_EXTENSION 	|| i.structureType == STRUCTURE_TOWER 	|| i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE || 	i.structureType == STRUCTURE_RAMPART 		|| i.structureType == STRUCTURE_LINK 		|| i.structureType == STRUCTURE_EXTRACTOR || i.structureType == STRUCTURE_LAB 		|| 	i.structureType == STRUCTURE_TERMINAL 	|| i.structureType == STRUCTURE_FACTORY || i.structureType == STRUCTURE_OBSERVER 	|| i.structureType == STRUCTURE_NUKER 	|| 	i.structureType == STRUCTURE_POWER_SPAWN });
+	const allStructures = this.find(FIND_STRUCTURES, { filter: (i) => i.structureType == STRUCTURE_CONTROLLER ||	i.structureType == STRUCTURE_SPAWN 	||	i.structureType == STRUCTURE_EXTENSION 	|| i.structureType == STRUCTURE_TOWER 	|| i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE || 	i.structureType == STRUCTURE_RAMPART 		|| i.structureType == STRUCTURE_LINK 		|| i.structureType == STRUCTURE_EXTRACTOR || i.structureType == STRUCTURE_LAB 		|| 	i.structureType == STRUCTURE_TERMINAL 	|| i.structureType == STRUCTURE_FACTORY || i.structureType == STRUCTURE_OBSERVER 	|| i.structureType == STRUCTURE_NUKER 	|| 	i.structureType == STRUCTURE_POWER_SPAWN });
 	
 	const controller 	= _.filter(allStructures, { structureType: STRUCTURE_CONTROLLER }	);
 	const spawns 			= _.filter(allStructures, { structureType: STRUCTURE_SPAWN 			} );
@@ -51,9 +51,9 @@ Room.prototype.cacheObjects 							= function() {
 	const nuker 			= _.filter(allStructures, { structureType: STRUCTURE_NUKER 			} );
 
 	// check if the 'objects' object exists in room memory & create it if not
-	if (!this.memory.objects) {
-		this.memory.objects = {};
-	}
+	if (!this.memory.objects) this.memory.objects = {};
+
+	console.log('[' + this.name + ']: Caching room objects...');
 	// if sources are found, add their IDs to array and add array to room's 'objects' memory
 	if (sources) {
 		for (i = 0; i < sources.length; i++)
@@ -61,9 +61,9 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.sources = storageArray;
 			if (storageArray.length > 1)
-				console.log('Cached ' + storageArray.length + ' sources.');
+				console.log('[' + this.name + ']: Cached ' + storageArray.length + ' sources.');
 			else
-				console.log('Cached 1 source.');
+				console.log('[' + this.name + ']: Cached 1 source.');
 		}
 		storageArray = [];
 	}
@@ -74,9 +74,9 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.minerals = storageArray;
 			if (storageArray.length > 1)
-				console.log('Cached ' + storageArray.length + ' minerals.');
+				console.log('[' + this.name + ']: Cached ' + storageArray.length + ' minerals.');
 			else
-				console.log('Cached 1 mineral.');
+				console.log('[' + this.name + ']: Cached 1 mineral.');
 		}
 		storageArray = [];
 	}
@@ -87,9 +87,9 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.deposits = storageArray;
 			if (storageArray.length > 1)
-				console.log('Cached ' + storageArray.length + ' deposits.');
+				console.log('[' + this.name + ']: Cached ' + storageArray.length + ' deposits.');
 			else
-				console.log('Cached 1 deposit.');
+				console.log('[' + this.name + ']: Cached 1 deposit.');
 		}
 		storageArray = [];
 	}
@@ -100,9 +100,9 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.controller = storageArray;
 			if (storageArray.length > 1)
-				console.log('Cached ' + storageArray.length + '  controllers.');
+				console.log('[' + this.name + ']: Cached ' + storageArray.length + ' controllers.');
 			else
-				console.log('Cached 1 controller.');
+				console.log('[' + this.name + ']: Cached 1 controller.');
 		}
 		storageArray = [];
 	}
@@ -113,9 +113,9 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.spawns = storageArray;
 			if (storageArray.length > 1) 
-				console.log('Cached ' + storageArray.length + ' spawns.');
+				console.log('[' + this.name + ']: Cached ' + storageArray.length + ' spawns.');
 			else 
-				console.log('Cached 1 spawn.');
+				console.log('[' + this.name + ']: Cached 1 spawn.');
 		}
 		storageArray = [];
 	}	
@@ -126,9 +126,9 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.extensions = storageArray;
 			if (storageArray.length > 1) 
-				console.log('Cached ' + storageArray.length + ' extensions.');
+				console.log('[' + this.name + ']: Cached ' + storageArray.length + ' extensions.');
 			else 
-				console.log('Cached 1 extebsion.');
+				console.log('[' + this.name + ']: Cached 1 extension.');
 		}
 		storageArray = [];
 	}	
@@ -139,9 +139,9 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.towers = storageArray;
 			if (storageArray.length > 1)
-				console.log('Cached ' + storageArray.length + ' towers.');
+				console.log('[' + this.name + ']: Cached ' + storageArray.length + ' towers.');
 			else
-				console.log('Cached 1 tower.');
+				console.log('[' + this.name + ']: Cached 1 tower.');
 		}
 		storageArray = [];
 	}
@@ -152,9 +152,9 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.containers = storageArray;
 			if (storageArray.length > 1)
-				console.log('Cached ' + storageArray.length + ' containers.');
+				console.log('[' + this.name + ']: Cached ' + storageArray.length + ' containers.');
 			else
-				console.log('Cached 1 container.');
+				console.log('[' + this.name + ']: Cached 1 container.');
 		}
 		storageArray = [];
 	}
@@ -165,9 +165,7 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.storage = storageArray;
 			if (storageArray.length > 1)
-				console.log('Cached ' + storageArray.length + ' storages.');
-			else
-				console.log('Cached 1 storage.');
+				console.log('[' + this.name + ']: Cached 1 storage.');
 		}
 		storageArray = [];
 	}
@@ -178,9 +176,9 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.ramparts = storageArray;
 			if (storageArray.length > 1)
-				console.log('Cached ' + storageArray.length + ' ramparts.');
+				console.log('[' + this.name + ']: Cached ' + storageArray.length + ' ramparts.');
 			else
-				console.log('Cached 1 rampart.');
+				console.log('[' + this.name + ']: Cached 1 rampart.');
 		}
 		storageArray = [];
 	}
@@ -191,9 +189,9 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.links = storageArray;
 			if (storageArray.length > 1)
-				console.log('Cached ' + storageArray.length + ' links.');
+				console.log('[' + this.name + ']: Cached ' + storageArray.length + ' links.');
 			else
-				console.log('Cached 1 link.');
+				console.log('[' + this.name + ']: Cached 1 link.');
 		}
 		storageArray = [];
 	}
@@ -204,9 +202,7 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.extractor = storageArray;
 			if (storageArray.length > 1)
-				console.log('Cached ' + storageArray.length + ' extractors.');
-			else
-				console.log('Cached 1 extractor.');
+				console.log('[' + this.name + ']: Cached 1 extractor.');
 		}
 		storageArray = [];
 	}
@@ -217,9 +213,9 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.labs = storageArray;
 			if (storageArray.length > 1)
-				console.log('Cached ' + storageArray.length + ' labs.');
+				console.log('[' + this.name + ']: Cached ' + storageArray.length + ' labs.');
 			else
-				console.log('Cached 1 lab.');
+				console.log('[' + this.name + ']: Cached 1 lab.');
 		}
 		storageArray = [];
 	}
@@ -230,7 +226,7 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.terminal = storageArray;
 			if (storageArray.length >= 1)
-				console.log('Cached 1 terminal.');
+				console.log('[' + this.name + ']: Cached 1 terminal.');
 		}
 		storageArray = [];
 	}
@@ -241,7 +237,7 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.factory = storageArray;
 			if (storageArray.length >= 1)
-				console.log('Cached 1 factory.');
+				console.log('[' + this.name + ']: Cached 1 factory.');
 		}
 		storageArray = [];
 	}
@@ -252,7 +248,7 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.observer = storageArray;
 			if (storageArray.length >= 1)
-				console.log('Cached 1 observer.');
+				console.log('[' + this.name + ']: Cached 1 observer.');
 		}
 		storageArray = [];
 	}
@@ -263,7 +259,7 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.powerspawn = storageArray;
 			if (storageArray.length >= 1)
-				console.log('Cached 1 power spawn.');
+				console.log('[' + this.name + ']: Cached 1 power spawn.');
 		}
 		storageArray = [];
 	}
@@ -274,12 +270,12 @@ Room.prototype.cacheObjects 							= function() {
 		if (storageArray.length) {
 			this.memory.objects.nuker = storageArray;
 			if (storageArray.length >= 1)
-				console.log('Cached 1 nuker.');
+				console.log('[' + this.name + ']: Cached 1 nuker.');
 		}
 		storageArray = [];
 	}
 
-	return 'Caching objects for room ' + this.name + ' completed.';
+	return '[' + this.name + ']: Caching objects for room \'' + this.name + '\' completed.';
 }
 Room.prototype.initTargets 								= function(array) {
 
@@ -472,79 +468,33 @@ Room.prototype.setRoomFlags 							= function([flags]) {
 
 	return '[' + this.name + ']: Room flags set: centralStorageLogic(' + this.memory.settings.flags.centralStorageLogic + ') repairRamparts(' + this.memory.settings.flags.repairRamparts + ') repairWalls(' + this.memory.settings.flags.repairWalls + ') runnersDoMinerals(' + this.memory.settings.flags.runnersDoMinerals + ') towerRepairBasic(' + this.memory.settings.flags.towerRepairBasic + ') towerRepairDefenses(' + this.memory.settings.flags.towerRepairDefenses + ') runnersDoPiles(' + this.memory.settings.flags.runnersDoPiles + ') harvestersFixAdjacent(' + this.memory.settings.flags.harvestersFixAdjacent + ') repairBasics(' + this.memory.settings.flags.repairBasics + ') upgradersSeekEnergy(' + this.memory.settings.flags.upgradersSeekEnergy + ')';
 }
-Room.prototype.initSettings 					= function() {
+Room.prototype.initSettings 							= function() {
 
-	if (!this.memory.settings)
-		this.memory.settings = {};
-
-	if (!this.memory.data)
-		this.memory.data = {};
-
-	if (!this.memory.settings.repairSettings)
-		this.memory.settings.repairSettings = {};
-	
-	if (!this.memory.settings.labSettings)
-		this.memory.settings.labSettings = {};
-
-	if (!this.memory.settings.visualSettings)
-		this.memory.settings.visualSettings = {};
-
-	if (!this.memory.settings.containerSettings)
-		this.memory.settings.containerSettings = {};
-
-	if (!this.memory.settings.visualSettings.spawnInfo)
-		this.memory.settings.visualSettings.spawnInfo = {};
-
-	if (!this.memory.settings.visualSettings.roomFlags)
-		this.memory.settings.visualSettings.roomFlags = {};
-
-	if (this.memory.settings.repairSettings.repairRampartsTo === undefined)
-		this.memory.settings.repairSettings.repairRampartsTo = 1;
-
-	if (this.memory.settings.repairSettings.repairWallsTo === undefined)
-		this.memory.settings.repairSettings.repairWallsTo = 1;
-
-	if (!this.memory.settings.visualSettings.spawnInfo.alignment)
-		this.memory.settings.visualSettings.spawnInfo.alignment = 'right';
-
-	if (!this.memory.settings.visualSettings.spawnInfo.color)
-		this.memory.settings.visualSettings.spawnInfo.color = '#ffffff';
-	
-	if (!this.memory.settings.visualSettings.spawnInfo.fontSize)
-		this.memory.settings.visualSettings.spawnInfo.fontSize = 0.4;
-
-	if (!this.memory.settings.visualSettings.roomFlags.displayCoords)
-		this.memory.settings.visualSettings.roomFlags.displayCoords = [0, 49];
-		
-	if (!this.memory.settings.visualSettings.roomFlags.color)
-		this.memory.settings.visualSettings.roomFlags.color = '#ff0033';
-
-	if (!this.memory.settings.visualSettings.roomFlags.fontSize)
-		this.memory.settings.visualSettings.roomFlags.fontSize = 0.4;
-
-	if (!this.memory.settings.labSettings.reagentOne)
-		this.memory.settings.labSettings.reagentOne = 'none';
-
-	if (!this.memory.settings.labSettings.reagentTwo)
-		this.memory.settings.labSettings.reagentTwo = 'none';
-
-	if (!this.memory.settings.containerSettings.inboxes)
-		this.memory.settings.containerSettings.inboxes = [];
-	
-	if (!this.memory.settings.containerSettings.outboxes)
-		this.memory.settings.containerSettings.outboxes = [];
-
-	if (this.memory.settings.containerSettings.lastInbox === undefined)
-		this.memory.settings.containerSettings.lastInbox = 0;
-
-	if (this.memory.settings.containerSettings.lastOutbox === undefined)
-		this.memory.settings.containerSettings.lastOutbox = 0;
-	
-	if (this.memory.data.logisticalPairs === undefined)
-		this.memory.data.logisticalPairs = [];
-
-	if (this.memory.data.pairCounter === undefined)
-		this.memory.data.pairCounter = 0;
+	if (!this.memory.settings) 																							this.memory.settings = {};
+	if (!this.memory.data) 																									this.memory.data = {};
+	if (!this.memory.settings.flags) 																				this.memory.settings.flags = {};
+	if (!this.memory.settings.repairSettings) 															this.memory.settings.repairSettings = {};
+	if (!this.memory.settings.labSettings) 																	this.memory.settings.labSettings = {};
+	if (!this.memory.settings.visualSettings)																this.memory.settings.visualSettings = {};
+	if (!this.memory.settings.containerSettings) 														this.memory.settings.containerSettings = {};
+	if (!this.memory.settings.visualSettings.spawnInfo) 										this.memory.settings.visualSettings.spawnInfo = {};
+	if (!this.memory.settings.visualSettings.roomFlags)											this.memory.settings.visualSettings.roomFlags = {};
+	if (this.memory.settings.repairSettings.repairRampartsTo === undefined)	this.memory.settings.repairSettings.repairRampartsTo = 1;
+	if (this.memory.settings.repairSettings.repairWallsTo === undefined) 		this.memory.settings.repairSettings.repairWallsTo = 1;
+	if (!this.memory.settings.visualSettings.spawnInfo.alignment) 					this.memory.settings.visualSettings.spawnInfo.alignment = 'right';
+	if (!this.memory.settings.visualSettings.spawnInfo.color) 							this.memory.settings.visualSettings.spawnInfo.color = '#ffffff';
+	if (!this.memory.settings.visualSettings.spawnInfo.fontSize) 						this.memory.settings.visualSettings.spawnInfo.fontSize = 0.4;
+	if (!this.memory.settings.visualSettings.roomFlags.displayCoords)				this.memory.settings.visualSettings.roomFlags.displayCoords = [0, 49];
+	if (!this.memory.settings.visualSettings.roomFlags.color)								this.memory.settings.visualSettings.roomFlags.color = '#ff0033';
+	if (!this.memory.settings.visualSettings.roomFlags.fontSize) 						this.memory.settings.visualSettings.roomFlags.fontSize = 0.4;
+	if (!this.memory.settings.labSettings.reagentOne)												this.memory.settings.labSettings.reagentOne = 'none';
+	if (!this.memory.settings.labSettings.reagentTwo)												this.memory.settings.labSettings.reagentTwo = 'none';
+	if (!this.memory.settings.containerSettings.inboxes) 										this.memory.settings.containerSettings.inboxes = [];
+	if (!this.memory.settings.containerSettings.outboxes)										this.memory.settings.containerSettings.outboxes = [];
+	if (this.memory.settings.containerSettings.lastInbox === undefined)			this.memory.settings.containerSettings.lastInbox = 0;
+	if (this.memory.settings.containerSettings.lastOutbox === undefined) 		this.memory.settings.containerSettings.lastOutbox = 0;
+	if (this.memory.data.logisticalPairs === undefined)											this.memory.data.logisticalPairs = [];
+	if (this.memory.data.pairCounter === undefined)													this.memory.data.pairCounter = 0;
 	
 	return '[' + this.name + ']: Room settings initialized.';
 }
@@ -1193,9 +1143,6 @@ Room.prototype.registerOutpost 						= function(roomName) {
 	return '[' + this.name + ']: Outpost at ' + outpostRoomName + ' successfully registered.';
 }
 Room.prototype.registerOutpostContainers 	= function (outpostName) {
-	
-	
-
 	if (typeof outpostName === 'string') { // CALLED FROM MASTER COLONY ROOM
 		Game.rooms[outpostName].cacheObjects();
 		if (Game.rooms[outpostName].memory.objects.containers !== undefined && Game.rooms[outpostName].memory.objects.containers.length > 0) {

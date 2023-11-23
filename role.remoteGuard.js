@@ -32,6 +32,9 @@ const roleRemoteGuard = {
 						const target = pos.findClosestByRange(hostiles);
 						if (creep.attack(target) == ERR_NOT_IN_RANGE)
 							creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.3, lineStyle: 'undefined', ignoreCreeps: true } });
+					} else {
+						if (!pos.isNearTo(Game.flags[outpostRoom]))
+							creep.moveTo(Game.flags[outpostRoom], { visualizePathStyle: { stroke: '#ff0000', opacity: 0.3, lineStyle: 'undefined', ignoreCreeps: true } });
 					}
 				}
 			} else { // I HAVE A RALLY POINT, LET'S BOOGY!

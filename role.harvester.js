@@ -40,14 +40,26 @@ const roleHarvester = {
                 const chosenBucket = sourceTarget.pos.findClosestByRange(possibleBuckets);
 							
                 if (chosenBucket) cMem.bucket = chosenBucket.id;
-                else creep.unloadEnergy();
-              } else creep.unloadEnergy();
+                else {
+                  creep.unloadEnergy();
+                  creep.harvestEnergy();
+                }
+              } else {
+                creep.unloadEnergy();
+                creep.harvestEnergy();
+              }
             } else {
               const dropBucket = Game.getObjectById(cMem.bucket);
               if (dropBucket) {
-                if (pos.isNearTo(dropBucket)) creep.unloadEnergy();
+                if (pos.isNearTo(dropBucket)) {
+                  creep.unloadEnergy();
+                  creep.harvestEnergy();
+                }
                 else creep.moveTo(dropBucket, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'dashed' } });
-              } else creep.unloadEnergy();
+              } else {
+                creep.unloadEnergy();
+                creep.harvestEnergy();
+              }
             }
           } else creep.harvestEnergy();
         }

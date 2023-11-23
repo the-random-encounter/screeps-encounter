@@ -35,6 +35,8 @@ const roleClaimer = {
 				} else {
 					if (creep.claimController(room.controller) == ERR_NOT_IN_RANGE)
 						creep.moveTo(room.controller, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined' } });
+					if (!room.controller.sign)
+						creep.signController(room.controller, 'There\'s no place like 127.0.0.1');
 				}
 			} else { // I HAVE A RALLY POINT, LET'S BOOGY!
 				const rally = Game.flags[cMem.rallyPoint];
