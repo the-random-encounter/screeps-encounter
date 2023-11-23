@@ -18,6 +18,7 @@ const roleHealer				= require('role.healer'		);
 const roleProvider				= require('role.provider'	);
 const roleRebooter				= require('role.rebooter'	);
 
+const roleRemoteLogistician 			= require('role.remoteLogistician');
 const roleRemoteHarvester			= require('role.remoteHarvester');
 const roleRemoteBuilder				= require('role.remoteBuilder'	);
 const roleRemoteRunner				= require('role.remoteRunner'	);
@@ -53,7 +54,8 @@ const spawnVariants = {
 	'harvester200':	[ CARRY, MOVE, WORK ],
 	'harvester300':	[ CARRY, MOVE, WORK, WORK ],
 	'harvester400':	[ CARRY, MOVE, WORK, WORK, WORK ],
-	'harvester500':	[ CARRY, CARRY, MOVE, MOVE, WORK, WORK, WORK ],
+	'harvester500': [ CARRY, CARRY, MOVE, MOVE, WORK, WORK, WORK ],
+	'harvester600': [ CARRY, MOVE, WORK, WORK, WORK, WORK, WORK ],
 	'harvester750':	[ CARRY, MOVE, WORK, WORK, WORK, WORK, WORK, WORK ],
 	'harvester950':	[ CARRY, CARRY, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK ],
 	'collector100':	[ CARRY, MOVE ],
@@ -104,25 +106,26 @@ let availableVariants = {
 
 // declare creep counting integers for spawning purposes
 let harvesterCount 	= 0;
-let builderCount	 	= 0;
+let builderCount	 = 0;
 let upgraderCount 	= 0;
 let collectorCount 	= 0;
 let repairerCount 	= 0;
-let runnerCount 		= 0;
+let runnerCount 	= 0;
 let rebooterCount 	= 0;
 let reserverCount 	= 0;
-let rangerCount 		= 0;
-let warriorCount 		= 0;
-let healerCount 		= 0;
-let craneCount 			= 0;
-let minerCount			= 0;
+let rangerCount 	= 0;
+let warriorCount 	= 0;
+let healerCount 	= 0;
+let craneCount 		= 0;
+let minerCount		= 0;
 let scientistCount 	= 0;
-let scoutCount 			= 0;
+let scoutCount 		= 0;
 
 let remoteHarvesterCount 	= 0;
 let remoteRunnerCount 		= 0;
 let remoteBuilderCount 		= 0;
-let remoteGuardCount 			= 0;
+let remoteGuardCount 		= 0;
+let remoteLogistician 		= 0;
 
 // declare other global variables
 let tickCount = 0;
@@ -493,38 +496,38 @@ module.exports.loop = function () {
 			} else if (room.energyCapacityAvailable <= 800) {
 				availableVariants.harvester 	= spawnVariants.harvester500;
 				availableVariants.collector 	= spawnVariants.collector500;
-				availableVariants.upgrader 		= spawnVariants.upgrader550;
-				availableVariants.builder 		= spawnVariants.builder500;
-				availableVariants.repairer 		= spawnVariants.repairer500;
-				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.warrior 		= spawnVariants.warrior520;
-				availableVariants.crane 			= spawnVariants.crane500;
+				availableVariants.upgrader 	= spawnVariants.upgrader550;
+				availableVariants.builder 	= spawnVariants.builder500;
+				availableVariants.repairer 	= spawnVariants.repairer500;
+				availableVariants.runner 	= spawnVariants.runner300;
+				availableVariants.warrior 	= spawnVariants.warrior520;
+				availableVariants.crane 	= spawnVariants.crane500;
 			} else if (room.energyCapacityAvailable <= 1000) {
-				availableVariants.harvester 	= spawnVariants.harvester750;
+				availableVariants.harvester 	= spawnVariants.harvester600;
 				availableVariants.collector 	= spawnVariants.collector500;
-				availableVariants.upgrader 		= spawnVariants.upgrader700;
-				availableVariants.builder 		= spawnVariants.builder800;
-				availableVariants.repairer 		= spawnVariants.repairer800;
-				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane500;
-				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
+				availableVariants.upgrader 	= spawnVariants.upgrader700;
+				availableVariants.builder 	= spawnVariants.builder800;
+				availableVariants.repairer 	= spawnVariants.repairer800;
+				availableVariants.runner 	= spawnVariants.runner300;
+				availableVariants.crane 	= spawnVariants.crane500;
+				availableVariants.remoteGuard 	= spawnVariants.remoteGuard700;
 			} else if (room.energyCapacityAvailable <= 1300) {
-				availableVariants.harvester 	= spawnVariants.harvester750;
+				availableVariants.harvester 	= spawnVariants.harvester600;
 				availableVariants.collector 	= spawnVariants.collector500;
-				availableVariants.upgrader 		= spawnVariants.upgrader700;
-				availableVariants.builder 		= spawnVariants.builder1000;
-				availableVariants.repairer 		= spawnVariants.repairer1000;
-				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane500;
-				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
+				availableVariants.upgrader 	= spawnVariants.upgrader700;
+				availableVariants.builder 	= spawnVariants.builder1000;
+				availableVariants.repairer 	= spawnVariants.repairer1000;
+				availableVariants.runner 	= spawnVariants.runner300;
+				availableVariants.crane 	= spawnVariants.crane500;
+				availableVariants.remoteGuard 	= spawnVariants.remoteGuard700;
 			} else if (room.energyCapacityAvailable > 1600) {
-				availableVariants.harvester 	= spawnVariants.harvester750;
+				availableVariants.harvester 	= spawnVariants.harvester600;
 				availableVariants.collector 	= spawnVariants.collector500;
-				availableVariants.upgrader 		= spawnVariants.upgrader900;
-				availableVariants.builder 		= spawnVariants.builder1100;
-				availableVariants.repairer 		= spawnVariants.repairer1000;
-				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane500;
+				availableVariants.upgrader 	= spawnVariants.upgrader900;
+				availableVariants.builder 	= spawnVariants.builder1100;
+				availableVariants.repairer 	= spawnVariants.repairer1000;
+				availableVariants.runner 	= spawnVariants.runner300;
+				availableVariants.crane 	= spawnVariants.crane500;
 				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
 			}
 
@@ -832,6 +835,9 @@ module.exports.loop = function () {
 				break;
 			case 'healer':
 				roleHealer.run(creep);
+				break;
+			case 'remotelogistician':
+				roleRemoteLogistician.run(creep);
 				break;
 			case 'remoteharvester':
 				roleRemoteHarvester.run(creep);
