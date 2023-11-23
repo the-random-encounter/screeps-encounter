@@ -1,6 +1,3 @@
-// DEFAULT 'COLLECTOR' PATH VISUALIZER SETTINGS:
-//,{ visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } }
-
 const roleCollector = {
 
 	run: function (creep) {
@@ -65,11 +62,9 @@ const roleCollector = {
 								}
 
 								const creepGonnaDie = creep.ticksToLive;
-								const tombsWithStuff = room.find(FIND_TOMBSTONES, { filter: (i) => i.store.getUsedCapacity() > 0 }).length && i.creep.my == false;
+								const tombsWithStuff = room.find(FIND_TOMBSTONES, { filter: (i) => i.store.getUsedCapacity() > 0 }).length;
 														
-								if (tombsWithStuff.length == 0 || creepGonnaDie < 100) {
-									delete cMem.invaderLooter;
-								}							
+								if (tombsWithStuff.length == 0 || creepGonnaDie < 100) delete cMem.invaderLooter;					
 							}
 						}
 					}
