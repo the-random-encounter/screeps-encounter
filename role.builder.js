@@ -95,7 +95,7 @@ const roleBuilder = {
           }
         } else {
         
-          let cSites = room.find(FIND_CONSTRUCTION_SITES);
+          let cSites = room.find(FIND_MY_CONSTRUCTION_SITES);
           const target = cSites[0];
 
           if (target) {

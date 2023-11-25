@@ -25,12 +25,19 @@ const roleCollector = {
 					const tombstones = room.find(FIND_TOMBSTONES, { filter: { creep: { my: false } } });
 					const target = pos.findClosestByRange(tombstones);
 					
+					if (target.store.getUsedCapacity() == 0) {
+						if (cMem.xferGoods !== undefined) delete cMem.xferGoods;
+						delete cMem.invaderLooter;
+					}
+
 					if (cMem.xferGoods === true && creep.store.getUsedCapacity() > 0) {
-						const creepLootTypes = Object.keys(creep.store);
-						creep.transfer(room.storage, creepLootTypes[creepLootTypes.length - 1]);
+						if (!pos.isNearTo(room.storage)) creep.moveTo(room.storage, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
+						else {
+							const creepLootTypes = Object.keys(creep.store);
+							creep.transfer(room.storage, creepLootTypes[creepLootTypes.length - 1]);
 
-						if (creep.store.getUsedCapacity() == 0) delete cMem.xferGoods;
-
+							if (creep.store.getUsedCapacity() == 0) delete cMem.xferGoods;
+						}
 					} else {
 
 						if (target) { // I FOUND THE CLOSEST ENEMY TOMBSTONE
@@ -42,7 +49,10 @@ const roleCollector = {
 							else { // THERE'S WORTHWHILE LOOT
 								if (creep.store.getFreeCapacity() !== 0) { // AND I HAVE FREE SPACE
 
-									if (pos.isNearTo(target)) creep.withdraw(target, lootTypes[lootTypes.length - 1]);
+									if (pos.isNearTo(target)) {
+										creep.withdraw(target, lootTypes[lootTypes.length - 1]);
+										cMem.xferGoods = true;
+									}
 									else creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
 									
 								} else { // I NEED TO UNLOAD MY INVENTORY
@@ -53,7 +63,7 @@ const roleCollector = {
 
 										const creepLootTypes = Object.keys(creep.store);
 										creep.transfer(storage, creepLootTypes[creepLootTypes.length - 1]);
-										cMem.xferGoods = true;
+										cMem.xferGoods = false;
 
 									}
 
@@ -69,7 +79,6 @@ const roleCollector = {
 						}
 					}
 				} else { // NO INVADERS TO LOOT, SO...
-
 					if (creep.store[RESOURCE_ENERGY] == 0) { // NO ENERGY, SO...
 
 						let droppedPiles = room.find(FIND_DROPPED_RESOURCES);
@@ -90,7 +99,7 @@ const roleCollector = {
 
 								const maxInv = creep.getActiveBodyparts(CARRY) * 50;
 
-								if (room.storage.store[RESOURCE_ENERGY] >= maxInv) {
+								if (room.storage.store[RESOURCE_ENERGY] >= (maxInv * 0.75).toFixed(0)) {
 
 									if (!cMem.pickup) cMem.pickup = room.storage.id;
 

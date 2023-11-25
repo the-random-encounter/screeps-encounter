@@ -43,11 +43,14 @@ global.roomDefense = function (room) {
 							// search for roads, spawns, extensions, or towers under 95%
 							let targets = tower.room.find(FIND_STRUCTURES, {
 								filter: (i) => (i.hits < i.hitsMax) && (i.structureType ==
-									STRUCTURE_TOWER || i.structureType == STRUCTURE_SPAWN || i.structureType == STRUCTURE_EXTENSION || i.structureType == STRUCTURE_ROAD || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_EXTRACTOR || i.structureType == STRUCTURE_LAB || i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_STORAGE || i.structureType == STRUCTURE_TERMINAL)
+									STRUCTURE_TOWER || i.structureType == STRUCTURE_SPAWN || i.structureType == STRUCTURE_EXTENSION || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_EXTRACTOR || i.structureType == STRUCTURE_LAB || i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_STORAGE || i.structureType == STRUCTURE_TERMINAL)
 							});
 					
 							validTargets = validTargets.concat(targets);
 						
+							let roads = tower.room.find(FIND_STRUCTURES, { filter: (i) => (i.hits < i.hitsMax) && (i.structureType == STRUCTURE_ROAD) });
+							validTargets = validTargets.concat(roads);
+
 							if (tower.room.memory.settings.flags.towerRepairDefenses) {
 								if (tower.room.memory.settings.flags.repairRamparts) {
 									ramparts = tower.room.find(FIND_STRUCTURES, { filter: (i) => ((i.hits / i.hitsMax * 100) < rampartsMax) && (i.structureType == STRUCTURE_RAMPART) });
@@ -62,8 +65,8 @@ global.roomDefense = function (room) {
 						
 							const target = tower.pos.findClosestByRange(validTargets);
 							if (target) {
-								tower.room.memory.data.towerLRT = target.id;
-								tower.repair(target);
+								tower.room.memory.data.towerLRT = validTargets[0].id;
+								tower.repair(validTargets[0]);
 							}
 						}
 					}

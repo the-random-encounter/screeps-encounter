@@ -22,7 +22,8 @@ const roleRebooter = {
                 
                 if (creep.ticksToLive <= 2) creep.say('☠️');
             
-                if (creep.store.getFreeCapacity() > 0) creep.harvestEnergy();
+                if (creep.store.getFreeCapacity() !== 0)
+                    creep.harvestEnergy()                     
                 else {
                     var targets = room.find(FIND_STRUCTURES, {
                         filter: (structure) => {
@@ -32,7 +33,8 @@ const roleRebooter = {
                         }
                     });
                     if (targets.length > 0) {
-                        if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' } });
+                        const target = creep.pos.findClosestByRange(targets);
+                        if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
                     }
                 }
             } else { // I HAVE A RALLY POINT, LET'S BOOGY!

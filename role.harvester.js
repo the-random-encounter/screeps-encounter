@@ -23,7 +23,7 @@ const roleHarvester = {
         if (creep.ticksToLive <= 2) {
           creep.unloadEnergy();
           creep.say('☠️');
-        } else {
+        } 
 
           if (creep.store.getFreeCapacity() == 0 || creep.store.getFreeCapacity() < (creep.getActiveBodyparts(WORK) * 2)) {
             if (!cMem.bucket) {
@@ -62,7 +62,6 @@ const roleHarvester = {
               }
             }
           } else creep.harvestEnergy();
-        }
       } else { // I HAVE A RALLY POINT, LET'S BOOGY!
 				const rally = Game.flags[cMem.rallyPoint];
 				if (pos.isNearTo(rally)) cMem.rallyPoint = 'none';

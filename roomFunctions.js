@@ -1,4 +1,14 @@
-Room.prototype.calcPath 									= function(pathName, start, end, walkOnCreeps = true, serializeData = false, maxOps) {
+Room.prototype.clearPPT 									= function() { this.clearRCLCounter(); }
+Room.prototype.enableCSL 									= function() { this.enableCentralStorageLogic(); 	}
+Room.prototype.disableCSL 								= function() { this.disableCentralStorageLogic(); }
+Room.prototype.toggleCSL 									= function() { this.toggleCentralStorageLogic(); 	}
+Room.prototype.setAttackRoom 							= function (roomName) { this.memory.data.attackRoomTarget = roomName; }
+Room.prototype.setCustomAttackTarget 			= function (attackTarget) { this.memory.data.customAttackTarget = attackTarget;	}
+Room.prototype.getInboxes 								= function () { return this.memory.settings.containerSettings.inboxes; }
+Room.prototype.getOutboxes 								= function() { return this.memory.settings.containerSettings.outboxes; 	}
+Room.prototype.setQuota 									= function(roleTarget, newTarget) { this.setTarget(roleTarget, newTarget); }
+
+Room.prototype.calcPath = function (pathName, start, end, walkOnCreeps = true, serializeData = false, maxOps) {
 
 	PathFinder.use(true);
 	
@@ -283,9 +293,6 @@ Room.prototype.initTargets 								= function(array) {
 
 	this.memory.targets = {};
 }
-Room.prototype.setQuota 									= function(roleTarget, newTarget) {
-	this.setTarget(roleTarget, newTarget);
-}
 Room.prototype.setTarget 									= function(roleTarget, newTarget) {
 
 	const oldTarget = this.memory.targets[roleTarget];
@@ -319,6 +326,10 @@ Room.prototype.initRoom										= function() {
 		this.memory.objects.lastAssigned = 0;
 	if (!this.memory.data)
 		this.memory.data = {};
+	if (!this.memory.data.remoteLogistics)
+		this.memory.data.remoteLogistics = {};
+	if (!this.memory.data.combatObjectives)
+		this.memory.data.combatObjectives = {};
 		
 	this.cacheObjects();
 	this.initRoomFlags();
@@ -702,12 +713,6 @@ Room.prototype.checkOutbox 								= function(boxID) {
 	else
 		return false;
 }
-Room.prototype.getInboxes 								= function() {
-	return this.memory.settings.containerSettings.inboxes;
-}
-Room.prototype.getOutboxes 								= function() {
-	return this.memory.settings.containerSettings.outboxes;
-}
 Room.prototype.enableFlag 								= function(flag, initIfNull = false) {
 	if (this.memory.settings.flags[flag] === undefined && initIfNull === false)
 		return 'The specified flag does not exist: ' + flag;
@@ -744,11 +749,10 @@ Room.prototype.toggleFlag 								= function(flag, initIfNull = false, defaultVa
 		}
 	}
 }
-
-Room.prototype.enableCSL 	= function() { this.enableCentralStorageLogic(); }
-Room.prototype.disableCSL = function () { this.disableCentralStorageLogic(); }
-Room.prototype.toggleCSL = function () { this.toggleCentralStorageLogic(); }
-
+Room.prototype.clearRCLCounter 						= function() {
+	global.HEAP_MEMORY.rooms[this.name].controllerPPTArray = [];
+	return '[' + this.name + ']: Progress Per Tick array successfully cleared.'
+}
 Room.prototype.enableCentralStorageLogic 	= function() {
 	this.memory.settings.flags.centralStorageLogic = true;
 	return true;
@@ -1142,7 +1146,7 @@ Room.prototype.registerOutpost 						= function(roomName) {
 
 	return '[' + this.name + ']: Outpost at ' + outpostRoomName + ' successfully registered.';
 }
-Room.prototype.registerOutpostContainers 	= function (outpostName) {
+Room.prototype.registerOutpostContainers 	= function(outpostName) {
 	if (typeof outpostName === 'string') { // CALLED FROM MASTER COLONY ROOM
 		Game.rooms[outpostName].cacheObjects();
 		if (Game.rooms[outpostName].memory.objects.containers !== undefined && Game.rooms[outpostName].memory.objects.containers.length > 0) {
@@ -1252,7 +1256,7 @@ Room.prototype.registerLinks 							= function() {
 	}
 	
 }
-Room.prototype.registerInvaderGroup = function ( rallyPoint, targetRoom, groupSize = 2, groupRoles = ['melee', 'healer'],) {
+Room.prototype.registerInvaderGroup 			= function( rallyPoint, targetRoom, groupSize = 2, groupRoles = ['melee', 'healer'],) {
 	
 	if (Game.rooms[targetRoom])
 		this.memory.data.invaderTarget = targetRoom;
@@ -1265,9 +1269,44 @@ Room.prototype.registerInvaderGroup = function ( rallyPoint, targetRoom, groupSi
 	
 	//this.memory.data.invaderGroupSize 
 }
-Room.prototype.setAttackRoom = function (roomName) { this.memory.data.attackRoomTarget = roomName; }
-Room.prototype.setCustomAttackTarget = function (attackTarget) { this.memory.data.customAttackTarget = attackTarget;	}
-Room.prototype.setCraneSpot = function (posX, posY) {
+Room.prototype.setCraneSpot 							= function(posX, posY) {
 	this.memory.data.craneSpot = [posX, posY];
 	console.log('[' + this.name + ']: Set craneSpot to ' + posX + ', ' + posY + '.');
+}
+Room.prototype.setRemoteTargets = function (roomName, roomPos, waypoints = false, rbCount = 0, rlCount = 0, override = false) {
+	if (override && this.memory.data.remoteWorkRoom !== roomName)
+		return 'Current remoteWorkRoom already exists and override flag is not set.'; 
+	if (!validateRoomName(roomName))
+		return 'Invalid room name provided. Proper format is x##y##, where x is E or W, y is N or S, and ## is 1-60.';
+	
+	if (this.memory.data.remoteLogistics === undefined)
+		this.memory.data.remoteLogistics = {};
+	if (this.memory.data.remoteLogistics[roomName] === undefined)
+		this.memory.data.remoteLogistics[roomName] = {};
+
+	const homeRoomMem = this.memory.data.remoteLogistics[roomName];
+
+	let report = '>> REMOTE LOGISTICS REPORT (' + roomName + ')-----------------\n';
+
+	if (roomPos instanceof Array) {
+		if (typeof roomPos[0] === 'number' && typeof roomPos[1] === 'number') {
+			homeRoomMem.logisticsTarget = roomPos;
+			report += '\n>> LOGISTICS TARGET: X|' + roomPos[0] + ' Y|' + roomPos[1];
+		}
+	}
+	
+	homeRoomMem.roomName = roomName;
+	homeRoomMem.desiredBuilderCount = rbCount;
+	homeRoomMem.desiredLogisticianCount = rlCount;
+
+	report += '\n>> DESIRED BUILDER COUNT: ' + rbCount;
+	report += '\n>> DESIRED LOGISTICIAN COUNT: ' + rlCount;
+	if (waypoints) {
+		if (isArray(waypoints)) {
+			homeRoomMem.travelWaypoints = waypoints;
+			report += '\n>> WAYPOINTS: ' + waypoints;
+		}
+	}
+
+	console.log(report);
 }

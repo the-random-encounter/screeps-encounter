@@ -25,7 +25,7 @@ const roleRemoteGuard = {
 				else if (pos.y == 0) creep.move(BOTTOM);
 
 				if (room.name !== outpostRoom) {
-					creep.moveTo(Game.flags[outpostRoom], { visualizePathStyle: { stroke: '#ff0000', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+					creep.moveTo(Game.flags[outpostRoom], { visualizePathStyle: { stroke: '#ff0000', opacity: 0.3, lineStyle: 'undefined', ignoreCreeps: true } });
 				} else {
 					const hostiles = room.find(FIND_HOSTILE_CREEPS);
 					if (hostiles.length > 0) {
@@ -40,7 +40,7 @@ const roleRemoteGuard = {
 			} else { // I HAVE A RALLY POINT, LET'S BOOGY!
 				const rally = Game.flags[cMem.rallyPoint];
 				if (pos.isNearTo(rally)) cMem.rallyPoint = 'none';
-				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
+				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.3, lineStyle: 'undefined', ignoreCreeps: true } });
 			}
 		} else {
 			if (!Memory.globalSettings.alertDisabled)

@@ -1,5 +1,3 @@
-//, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted' } }
-
 const roleRunner = {
 
 	run: function (creep) {
@@ -26,16 +24,12 @@ const roleRunner = {
 				if (!cMem.pickup && !cMem.dropoff) creep.assignLogisticalPair();
 
 				if (creep.store[cMem.cargo] == 0) {
-
-					let target = Game.getObjectById(cMem.pickup);
-
+					const target = Game.getObjectById(cMem.pickup);
 					if (target) {
 						if (creep.withdraw(target, cMem.cargo) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted' } });
 					}
 				} else {
-
-					let target = Game.getObjectById(cMem.dropoff);
-
+					const target = Game.getObjectById(cMem.dropoff);
 					if (target) {
 						if (creep.transfer(target, cMem.cargo) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted' } });
 					}

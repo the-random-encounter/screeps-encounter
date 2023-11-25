@@ -545,7 +545,7 @@ module.exports.loop = function () {
 				availableVariants.runner 	= spawnVariants.runner300;
 				availableVariants.crane 	= spawnVariants.crane500;
 				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
-				availableVariants.remoteLogistician = spawnVariants.remoteLogistician1500;sho
+				availableVariants.remoteLogistician = spawnVariants.remoteLogistician1500;
 			}
 
 			if (room.memory.settings.flags.craneUpgrades == true) availableVariants.crane = spawnVariants.crane800;
@@ -639,13 +639,13 @@ module.exports.loop = function () {
 				else readySpawn = thisSpawn;
 			}
 
-			if (creepCount == 0 && room.energyAvailable() <= 300 && (!room.memory.objects.storage || room.storage.store[RESOURCE_ENERGY] < 500)) {
+			if (Game.creeps.length == 0 && room.energyAvailable <= 300 && (!room.memory.objects.storage || room.storage.store[RESOURCE_ENERGY] < 500)) {
 				newName = 'Rb' + (rebooters.length + 1);
 				while (readySpawn.spawnCreep([WORK, WORK, MOVE, CARRY], newName, { memory: { role: 'rebooter', roleForQuota: 'rebooter' } }) == ERR_NAME_EXISTS) {
 					newName = 'Rb' + (rebooters.length + 1 + rebooterCount);
 					rebooterCount++;
 				}
-			} else if (Game.creeps.length <= 1 && room.energyAvailable() <= 300 && room.storage.store[RESOURCE_ENERGY] >= 500) {
+			} else if (Game.creeps.length <= 1 && room.energyAvailable <= 300 && room.storage.store[RESOURCE_ENERGY] >= 500) {
 				const result = readySpawn.spawnCreep([CARRY, MOVE], 'Collie the Emergency Collector Creep', { memory: { role: 'collector', homeRoom: roomName } });
 				switch (result) {
 					case OK:
@@ -723,7 +723,7 @@ module.exports.loop = function () {
 						}
 					} else if ((remoteHarvesters.length < remoteHarvesterTarget) || (remoteHarvesters.length <= remoteHarvesterTarget && remoteHarvesterDying && remoteHarvesterTarget !== 0)) {
 						newName = 'RH' + (remoteHarvesters.length + 1);
-						while (readySpawn.spawnCreep([WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], newName, { memory: { role: 'remoteharvester', roleForQuota: 'remoteharvester', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
+						while (readySpawn.spawnCreep([ CARRY, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK ], newName, { memory: { role: 'remoteharvester', roleForQuota: 'remoteharvester', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 							newName = 'RH' + (remoteHarvesters.length + 1 + remoteHarvesterCount);
 							remoteHarvesterCount++;
 						}

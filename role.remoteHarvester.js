@@ -23,22 +23,37 @@ const roleRemoteHarvester = {
 					else if (creep.pos.y == 0) creep.move(BOTTOM);
 					
 					if (creep.store.getFreeCapacity() == 0 || creep.store.getFreeCapacity() < (creep.getActiveBodyparts(WORK) * 2)) {
-
-						const containers = pos.findInRange(FIND_STRUCTURES, 1, { filter: (i) => (i.structureType == STRUCTURE_CONTAINER)});
-						const target = pos.findClosestByRange(containers);
-
-						if (target) {
+						const containers = pos.findInRange(FIND_STRUCTURES, 3, { filter: (i) => (i.structureType == STRUCTURE_CONTAINER)});
+						
+						if (containers.length > 0) {
+							const target = pos.findClosestByRange(containers);
 
 							if (!pos.isNearTo(target)) creep.moveTo(target, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'dashed' } });
 							else {
 								if (target.hits < target.hitsMax) creep.repair(target);
-								else creep.unloadEnergy();
+								else {
+									creep.unloadEnergy();
+									creep.harvestEnergy();
+								}
 							}
 						} else {
-
-							const nearbySites = pos.findInRange(FIND_CONSTRUCTION_SITES, 1);
-							if (nearbySites.length > 0) creep.build(nearbySites[0]);
-							else room.createConstructionSite(pos.x, pos.y, STRUCTURE_CONTAINER);
+							if (creep.room.memory.outpostOfRoom) {
+								const nearbySites = pos.findInRange(FIND_CONSTRUCTION_SITES, 2);
+								if (nearbySites.length == 0) room.createConstructionSite(pos.x, pos.y, STRUCTURE_CONTAINER);
+								else {
+									const buildersNearby = room.find(FIND_MY_CREEPS, { filter: (i) => i.memory.role = 'remotebuilder' });
+									if (buildersNearby.length > 0) {
+										creep.unloadEnergy();
+										creep.harvestEnergy();
+									}
+									else
+										creep.build(nearbySites[0]);
+								}
+							}
+							else {
+								creep.unloadEnergy();
+								creep.harvestEnergy();
+							}
 						}
 					} else creep.harvestEnergy();
 				}

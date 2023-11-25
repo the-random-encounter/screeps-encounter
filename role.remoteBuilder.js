@@ -10,7 +10,12 @@ const roleRemoteBuilder = {
 
 		if (creep.memory.disableAI === undefined) creep.memory.disableAI = false;
 		if (creep.memory.rallyPoint === undefined) creep.memory.rallyPoint = 'none';
-		if (creep.memory.workRoom === undefined) creep.memory.workRoom = Game.rooms[creep.memory.homeRoom].memory.outposts.roomList[HEAP_MEMORY.outpostCounter];
+		if (creep.memory.workRoom === undefined) {
+			if (Memory.rooms[creep.memory.homeRoom].data.remoteWorkRoom !== undefined)
+				creep.memory.workRoom = Memory.rooms[creep.memory.homeRoom].data.remoteWorkRoom;
+			else
+				creep.memory.workRoom = creep.memory.homeRoom;
+		}
 
 		if (!creep.memory.disableAI) {
 
@@ -19,24 +24,15 @@ const roleRemoteBuilder = {
 				const workRoom = creep.memory.workRoom;
 
 				if (creep.ticksToLive <= 2) creep.say('☠️');
-				if (creep.memory.working === undefined) creep.memory.working = false;
-			
-				if (creep.memory.working && creep.store[RESOURCE_ENERGY] == 0) {
-					creep.memory.working = false;
-					creep.say('🔼');
-				}
-
-				if (!creep.memory.working && creep.store.getFreeCapacity() == 0) {
-					creep.memory.working = true;
-					creep.say('🏗️');
-				}
+				if (creep.store[RESOURCE_ENERGY] == 0) creep.say('🔼');
+				if (creep.store.getFreeCapacity() == 0) creep.say('🏗️');
 
 				if (creep.pos.x == 49) creep.move(LEFT);
 				else if (creep.pos.x == 0) creep.move(RIGHT);
 				else if (creep.pos.y == 49) creep.move(TOP);
 				else if (creep.pos.y == 0) creep.move(BOTTOM);
 
-				if (creep.store.getFreeCapacity() >= (creep.getActiveBodyparts(WORK) * 5) && creep.memory.working == false) {
+				if (creep.store.getFreeCapacity() >= (creep.getActiveBodyparts(CARRY) * 50)) {
 
 					const tombstones = creep.room.find(FIND_TOMBSTONES);
 					const containersWithEnergy = creep.room.find(FIND_STRUCTURES, {
@@ -49,40 +45,26 @@ const roleRemoteBuilder = {
 					const target = creep.pos.findClosestByRange(resourceList);
 		
 					if (target) {
-						if (creep.pickup(target) == ERR_NOT_IN_RANGE || creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+						if (creep.pickup(target) == ERR_NOT_IN_RANGE || creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
 							creep.moveTo(target, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
-						} else {
-							switch (target.structureType) {
-								case STRUCTURE_CONTAINER:
-								case STRUCTURE_STORAGE:
-									creep.withdraw(target, RESOURCE_ENERGY);
-									break;
-								default:
-									creep.pickup(target);
-									break;
-							}
-						}
-					} else creep.harvestEnergy();
+					}
 
-					creep.memory.working = true;
+				} else if (creep.store.getUsedCapacity() !== 0) {
 
-				} else if (creep.store.getUsedCapacity() !== 0 && creep.memory.working) {
-
-					if (creep.room.name !== workRoom)
-						creep.moveTo(Game.getObjectById(Game.rooms[workRoom].controller), { visualizePathStyle: { stroke: '#ffff00', opaciy: 0.3, ignoreCreeps: true } });
-					else {
-						let targets = Game.rooms[workRoom].find(FIND_CONSTRUCTION_SITES);
+					if (creep.room.name == workRoom) {
+						let targets = room.find(FIND_MY_CONSTRUCTION_SITES);
 						if (targets.length) {
 							targets = creep.pos.findClosestByRange(targets);
 							if (creep.build(targets) == ERR_NOT_IN_RANGE)
-								creep.moveTo(targets, { visualizePathStyle: { stroke: '#0000ff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+								creep.moveTo(targets, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 						}
-					}
+					} else
+						creep.moveTo(new RoomPosition(25, 25, workRoom), { visualizePathStyle: { stroke: '#ffff00', opaciy: 0.3, ignoreCreeps: true } });
 				}
 			}	else { // I HAVE A RALLY POINT, LET'S BOOGY!
 				const rally = Game.flags[cMem.rallyPoint];
 				if (pos.isNearTo(rally)) cMem.rallyPoint = 'none';
-				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
+				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 			}
 		}	else {
 			if (!Memory.globalSettings.alertDisabled)

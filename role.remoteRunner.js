@@ -57,7 +57,7 @@ const roleRemoteRunner = {
 			} else { // I HAVE A RALLY POINT, LET'S BOOGY!
 				const rally = Game.flags[cMem.rallyPoint];
 				if (pos.isNearTo(rally)) cMem.rallyPoint = 'none';
-				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#0000ff', opacity: 0.5, lineStyle: 'dotted', ignoreCreeps: true } });
+				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 			}
     } else {
       if (!Memory.globalSettings.alertDisabled)
