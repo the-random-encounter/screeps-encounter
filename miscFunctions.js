@@ -447,3 +447,76 @@ global.col = function (colNum) {
 	const roomName = Memory.colonyList[colNum - 1];
 	return Game.rooms[roomName];
 }
+
+global.isArray = function(value) { return value instanceof Array; }
+
+global.exists = function(value) {
+	try {
+		if (typeof value === 'object' && value !== null)
+			return true;
+		else if (typeof value !== 'undefined')
+			return true;
+		else
+			return false;
+	} catch (e) { return false; }
+}
+
+global.validateRoomName = function(roomName) {
+    // Scca			reeps room names are in the format E##N##, W##N##, E##S##, or W##S##.
+    // ## represents a single or two digit number within the range 1-60
+		// This range excludes leading zeroes such as 01
+    let pattern = /^[EW]([1-9]|[1-5]\d|60)[NS]([1-9]|[1-5]\d|60)$/;
+    return pattern.test(roomName);
+};
+
+global.roomNameToXY = function(name) {
+    let xx = parseInt(name.substr(1), 10);
+    let verticalPos = 2;
+    if (xx >= 100) {
+        verticalPos = 4;
+    } else if (xx >= 10) {
+        verticalPos = 3;
+    }
+    let yy = parseInt(name.substr(verticalPos + 1), 10);
+    let horizontalDir = name.charAt(0);
+    let verticalDir = name.charAt(verticalPos);
+    if (horizontalDir === 'W' || horizontalDir === 'w') {
+        xx = -xx - 1;
+    }
+    if (verticalDir === 'N' || verticalDir === 'n') {
+        yy = -yy - 1;
+    }
+    return [xx, yy];
+};
+
+global.validateFlagName = function (input) {
+
+	const gameFlags = Object.keys(Game.flags);
+	const numFlags = gameFlags.length;
+	let noMatch = false;
+
+	if (input instanceof Array) {
+		for (let i = 0; i < input.length; i++) {
+			let matched = validateFlagName(input[i]);
+			if (matched)
+				continue;
+			else {
+				console.log('Provided flag name of \'' + input[i] + '\' at index ' + i + ' is not an existent flag.');
+				return false;
+			}
+		}		
+	} else if (typeof input === 'string') {
+		for (let i = 0; i <= numFlags; i++) {
+			if (input == gameFlags[i])
+				return true;
+			else {
+				noMatch = true;
+				continue;
+			}
+		}
+		if (noMatch) return false;
+	} else {
+		console.log('Input parameter to validate must be an array of flag names, or a single flag name.');
+		return null;
+	}
+}
