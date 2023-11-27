@@ -26,12 +26,13 @@ Creep.prototype.assignHarvestSource = function(noIncrement) {
 
 	const room = this.room;
 	const creep = this;
+	const role = this.memory.role;
 
 	// Confirm the room has had its sources cached
 	if (room.memory.objects === undefined)	room.cacheObjects();
 
 	// if assignee is a miner, assign mineral instead of source
-	if (this.memory.role == 'miner') {
+	if (role == 'miner') {
 		const assignedMineral = room.memory.objects.minerals[0];
 		console.log('Assigned miner ' + this.name + ' to mineral ID ' + assignedMineral);
 		this.memory.mineral = assignedMineral;
@@ -39,19 +40,29 @@ Creep.prototype.assignHarvestSource = function(noIncrement) {
 	}
 
 	// get array of sources available
-	const roomSources = room.memory.objects.sources;
+	let roomSources;
+	if (role == 'harvester') roomSources = room.memory.objects.sources;
+	else if (role == 'remoteharvester') roomSources = room.memory.outposts.aggregateSourceList;
 
 	// in case there is no lastAssigned counter, create it
 	if (room.memory.objects.lastAssigned == undefined) {
 		room.memory.objects.lastAssigned = 0;
 		console.log('Creating \'lastAssigned\' memory object.')
 	}
+	if (room.memory.outposts.aggLastAssigned == undefined) {
+		room.memory.outposts.addLastAssigned = 0;
+		console.log('Creating \'aggLastAssigned\' memory object.');
+	}
 	
 	// separate last assigned value for contingency condition
-	const LA = room.memory.objects.lastAssigned;
+	let LA;
+	if (role == 'harvester') LA = room.memory.objects.lastAssigned;
+	else if (role == 'remoteharvester') LA = room.memory.outposts.aggLastAssigned;
 	
 	// set nextAssigned to the increment of lastAssigned
-	let nextAssigned = room.memory.objects.lastAssigned + 1;
+	let nextAssigned;
+	if (role == 'harvester') nextAssigned = room.memory.objects.lastAssigned + 1;
+	else if (role == 'remoteharvester') nextAssigned = room.memory.outposts.aggLastAssigned + 1;
 	
 	// set nextAssigned to 0 if it has reached the end of sources list
 	if (nextAssigned >= roomSources.length)
@@ -63,14 +74,23 @@ Creep.prototype.assignHarvestSource = function(noIncrement) {
 	// set creep memory to match
 	this.memory.source = assignedSource;
 
-	room.memory.objects.lastAssigned++;
+	if (role == 'harvester') room.memory.objects.lastAssigned++;
+	else if (role == 'remoteharvester') room.memory.outposts.aggLastAssigned++;
 
-	if (room.memory.objects.lastAssigned >= roomSources.length)
-		room.memory.objects.lastAssigned = 0;
+	if (role == 'harvester') {
+		if (room.memory.objects.lastAssigned >= roomSources.length)
+			room.memory.objects.lastAssigned = 0;
+	} else if (role == 'remoteharvester') {
+		if (room.memory.outposts.aggLastAssigned >= roomSources.length)
+			room.memory.outposts.aggLastAssigned = 0;
+	}
 
 	console.log('Assigned harvester ' + this.name + ' to source #' + (LA + 1) + ' (ID: ' + assignedSource + ') in room ' + this.room.name)
 
-	if (noIncrement) room.memory.objects.lastAssigned = LA;
+	if (noIncrement) {
+		if (role == 'harvester') room.memory.objects.lastAssigned = LA;
+		else if (role == 'remoteharvester') room.memory.outposts.aggLastAssigned = LA;
+	}
 
 	return assignedSource;
 }
@@ -152,13 +172,14 @@ Creep.prototype.unloadEnergy = function() {
 
 Creep.prototype.harvestEnergy = function() {
 	let storedSource = Game.getObjectById(this.memory.source);
-
 	if (!storedSource) {
 		delete this.memory.source;
-		if (this.memory.role == 'harvester' || this.memory.role == 'rebooter' || this.memory.role == 'miner')
-			storedSource = this.assignHarvestSource(false);
-	  else if (this.memory.role == 'remoteharvester')
-			storedSource = this.assignRemoteHarvestSource(false);
+		//if (this.memory.role == 'harvester' || this.memory.role == 'rebooter' || this.memory.role == 'miner')
+		storedSource = this.assignHarvestSource(false);
+		//else if (this.memory.role == 'remoteharvester') {
+		//	console.log('calling assignRemoteHarvestSource');
+		//	storedSource = this.assignRemoteHarvestSource(false);
+		//}
 	}
 	
 	if (storedSource) {
@@ -168,7 +189,7 @@ Creep.prototype.harvestEnergy = function() {
 					this.unloadEnergy();
 					this.harvest(storedSource);
 				} else {
-					creep.say('🚬');
+					this.say('🚬');
 				}
 			} else {
 				this.harvest(storedSource);
@@ -382,7 +403,7 @@ Creep.prototype.assignLogisticalPair = function (logParam) {
 	
 	let source, destination;
 
-	if (Object.prototype.toString.call(logParam) === '[object Array]') {
+	if (logParam instanceof Array) {
 		source = logParam[0];
 		destination = logParam[1];
 	} else if (typeof logParam === 'number') {
@@ -402,12 +423,12 @@ Creep.prototype.assignLogisticalPair = function (logParam) {
 	if (source && destination) {
 		if (typeof source === 'string')
 			this.memory.pickup = source;
-		else
+		else if (source instanceof OwnedStructure)
 			this.memory.pickup = source.id;
 
 		if (typeof destination === 'string')
 			this.memory.dropoff = destination;
-		else
+		else if (destination instanceof OwnedStructure)
 			this.memory.dropoff = destination.id;
 	} else {
 
@@ -433,7 +454,7 @@ Creep.prototype.assignLogisticalPair = function (logParam) {
 		if (this.room.memory.data.pairCounter >= this.room.memory.data.logisticalPairs.length)
 			this.room.memory.data.pairCounter = 0;
 
-		if (!this.room.memory.data.logisticalPairs) {
+		if (this.room.memory.data.logisticalPairs.length == 0) {
 			this.memory.pickup = 'none';
 			this.memory.dropoff = 'none';
 			return 'No pairs available to assign. Set \'none\'.';
@@ -445,10 +466,11 @@ Creep.prototype.assignLogisticalPair = function (logParam) {
 			this.memory.pickup = assignedPair[0];
 			this.memory.dropoff = assignedPair[1];
 			this.memory.cargo = assignedPair[2];
-			console.log('assignedPair: ' + assignedPair);
-			return 'Assigned pair (PICKUP: ' + assignedPair[0] + ') | (DROPOFF: ' + assignedPair[1] + ') | (CARGO: ' + assignedPair[2] + ')';
+			console.log('[' + this.room.name + ']: Assigned pair (PICKUP: ' + assignedPair[0] + ') | (DROPOFF: ' + assignedPair[1] + ') | (CARGO: ' + assignedPair[2] + ')');
+			return;
 		} else {
-			return 'Unable to assign pair.';
+			console.log('[' + this.room.name + ']: Unable to assign pair for creep \'' + this.name + '\'.');
+			return; 
 		}
 	}
 }
