@@ -16,11 +16,11 @@ const roleRemoteLogistician = {
 		if (cMem.destPos === undefined) cMem.destPos = remoteLogs.logisticsTarget;
 		if (cMem.destRoom === undefined) cMem.destRoom = rMem.data.remoteWorkRoom;
 		if (cMem.homeStorage === undefined) cMem.homeStorage = room.storage.id;
-		if (cMem.intialEnergy === undefined) cMem.intialEnergy = false;
+		if (cMem.initialEnergy === undefined) cMem.initialEnergy = false;
 
 		if (!cMem.disableAI) {
 
-			if (cMem.intialEnergy == false) {
+			if (cMem.initialEnergy == false) {
 				const homeStorage = Game.getObjectById(cMem.homeStorage);
 				if (homeStorage) {
 					const result = creep.withdraw(homeStorage, RESOURCE_ENERGY)
