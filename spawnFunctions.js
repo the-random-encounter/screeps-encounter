@@ -12,6 +12,18 @@ Spawn.prototype.spawnWarrior = function (maxEnergy) {
 
 }
 
+Spawn.prototype.spawnHarvester = function (targetRoom, name) {
+	const result = this.spawnCreep([CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK], name, { memory: { role: 'harvester', homeRoom: targetRoom, rallyPoint: targetRoom } });
+	return '[' + this.room.name + ']: Spawning harvester (home: ' + targetRoom + ')... RESULT CODE: ' + result;
+}
+Spawn.prototype.spawnClaimer = function (claimRoom) {
+
+	const homeRoom = this.room.name;
+
+	this.spawnCreep([MOVE, CLAIM], 'Claimer', { memory: { role: 'claimer', roleForQuota: 'claimer', homeRoom: homeRoom, claimRoom: claimRoom } });
+
+	return '[' + this.room.name + ']: Spawning claimer (home: ' + homeRoom + ') (claim: ' + claimRoom + ')';
+}
 Spawn.prototype.determineBodyparts = function (creepRole, maxEnergy = false) {
 	
 	switch (creepRole) {
