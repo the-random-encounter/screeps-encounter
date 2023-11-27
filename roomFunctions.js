@@ -615,7 +615,7 @@ Room.prototype.registerLogisticalPairs 		= function() {
 		const startPos = Game.getObjectById(pair[0]);
 		const endPos = Game.getObjectById(pair[1]);
 
-		let path = calcPath(startPos.pos, endPos.pos);
+		let path = calcPath(startPos.pos, endPos.pos, true);
 		let pathLen = path[1];
 		let serialPath = Room.serializePath(path[0]);
 		this.memory.data.pairPaths[i] = [serialPath, pathLen];
