@@ -179,10 +179,8 @@ global.visualRCProgress = function (controllerID) {
 	}
 	let cont; 
 	
-	if (typeof controllerID == 'string')
-		cont = GOBI(controllerID);
-	else
-		cont = controllerID;
+	if (typeof controllerID == 'string') cont = GOBI(controllerID);
+	else cont = controllerID;
 
 	if (HEAP_MEMORY.rooms[cont.room.name] === undefined)
 		HEAP_MEMORY.rooms[cont.room.name] = {};
@@ -190,6 +188,16 @@ global.visualRCProgress = function (controllerID) {
 		HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray = [];
 	if (HEAP_MEMORY.rooms[cont.room.name].controllerProgress === undefined)
 		HEAP_MEMORY.rooms[cont.room.name].controllerProgress = 0;
+	if (HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray.length > 20) {
+		const array = HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray;
+		let sum = array.reduce(add, 0);
+		let arrayLen = array.length;
+
+		function add(accumulator, a) { return accumulator + a; }
+		const avg = parseInt((sum / arrayLen).toFixed(2));
+		HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray = [];
+		HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray.push(avg);
+	}
 	
 	const progress = cont.progress;
 
@@ -208,9 +216,7 @@ global.visualRCProgress = function (controllerID) {
 	let sum = HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray.reduce(add, 0);
 	let arrayLen = HEAP_MEMORY.rooms[cont.room.name].controllerPPTArray.length;
 
-	function add(accumulator, a) {
-		return accumulator + a;
-	}
+	function add(accumulator, a) { return accumulator + a; }
 	
 	const avgProgressPerTick = (sum / arrayLen).toFixed(2);
 	
@@ -519,4 +525,78 @@ global.validateFlagName = function (input) {
 		console.log('Input parameter to validate must be an array of flag names, or a single flag name.');
 		return null;
 	}
+}
+
+global.calcPath = function (startPos, endPos) {
+	
+	if (!startPos instanceof RoomPosition && !endPos instanceof RoomPosition)
+		return 'Neither of the provided parameters are valid RoomPosition objects.';
+	else if (!startPos instanceof RoomPosition)
+		return 'The first parameter provided is not a valid RoomPosition object.';
+	else if (!endPos instanceof RoomPosition)
+		return 'The second parameter provided is not a valid RoomPosition object.';
+
+	let goal = { pos: endPos, range: 1 };
+	
+	 let ret = PathFinder.search(
+    startPos, goal,
+    {
+      // We need to set the defaults costs higher so that we
+      // can set the road cost lower in `roomCallback`
+      plainCost: 2,
+      swampCost: 10,
+
+      roomCallback: function(roomName) {
+
+        let room = Game.rooms[roomName];
+        // In this example `room` will always exist, but since 
+        // PathFinder supports searches which span multiple rooms 
+        // you should be careful!
+        if (!room) return;
+        let costs = new PathFinder.CostMatrix;
+
+        room.find(FIND_STRUCTURES).forEach(function(struct) {
+          if (struct.structureType === STRUCTURE_ROAD) {
+            // Favor roads over plain tiles
+            costs.set(struct.pos.x, struct.pos.y, 1);
+          } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                     (struct.structureType !== STRUCTURE_RAMPART ||
+                      !struct.my)) {
+            // Can't walk through non-walkable buildings
+            costs.set(struct.pos.x, struct.pos.y, 255);
+          }
+        });
+
+        // Avoid creeps in the room
+        //room.find(FIND_CREEPS).forEach(function(creep) {
+        //  costs.set(creep.pos.x, creep.pos.y, 0xff);
+        //});
+
+        return costs;
+      },
+    }
+	);
+	
+
+	return [ret.path, ret.path.length];
+}
+
+global.getBody = function(segment, room) {
+	let body = [];
+
+	// How much each segment costs
+	let segmentCost = _.sum(segment, s => BODYPART_COST[s]);
+
+	// how much energy we can use total
+	let energyAvailable = room.energyCapacityAvailable;
+
+	// how many times we can include the segment with room energy
+	let maxSegments = Math.floor(energyAvailable / segmentCost);
+
+	// push the segment multiple times
+	_.times(maxSegments, function () {
+		_.forEach(segment, s => body.push(s));
+	});
+
+	return body;
 }
