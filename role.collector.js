@@ -24,14 +24,16 @@ const roleCollector = {
 				if (cMem.invaderLooter && room.storage) { // THERE ARE INVADERS TO LOOT AND STORAGE TO PUT IT IN!
 					const tombstones = room.find(FIND_TOMBSTONES, { filter: { creep: { my: false } } });
 					const target = pos.findClosestByRange(tombstones);
-					
-					if (target.store.getUsedCapacity() == 0) {
-						if (cMem.xferGoods !== undefined) delete cMem.xferGoods;
-						delete cMem.invaderLooter;
+					if (target) {
+						if (target.store.getUsedCapacity() == 0) {
+							if (cMem.xferGoods !== undefined) delete cMem.xferGoods;
+							delete cMem.invaderLooter;
+						}
 					}
 
 					if (cMem.xferGoods === true && creep.store.getUsedCapacity() > 0) {
-						if (!pos.isNearTo(room.storage)) creep.moveTo(room.storage, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
+						if (!pos.isNearTo(room.storage))
+							creep.moveTo(room.storage, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
 						else {
 							const creepLootTypes = Object.keys(creep.store);
 							creep.transfer(room.storage, creepLootTypes[creepLootTypes.length - 1]);
@@ -89,13 +91,15 @@ const roleCollector = {
 
 						if (droppedPiles.length > 0) {
 
-							if (creep.pickup(droppedPiles[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(droppedPiles[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+							if (creep.pickup(droppedPiles[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
+								creep.moveTo(droppedPiles[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 
 						} else if (tombstones.length > 0) {
 							cMem.tombXfer = true;
 							const tombstoneItem = Object.keys(tombstones[0].store);
 							cMem.tombItem = tombstoneItem[0];
-							if (creep.withdraw(tombstones[0], cMem.tombItem) == ERR_NOT_IN_RANGE) creep.moveTo(tombstones[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+							if (creep.withdraw(tombstones[0], cMem.tombItem) == ERR_NOT_IN_RANGE)
+								creep.moveTo(tombstones[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 							
 
 						} else { // NO DROPPED PILES, NEED TO FIND OTHER SOURCES OF ENERGY...
@@ -104,7 +108,8 @@ const roleCollector = {
 								if (!cMem.pickup) cMem.pickup = room.storage.id;
 								const storage = room.storage;
 								if (room.storage.store[RESOURCE_ENERGY] >= creep.store.getCapacity()) {
-									if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(storage, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+									if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
+										creep.moveTo(storage, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 								} else {
 									let piles = creep.room.find(FIND_DROPPED_RESOURCES);
 									piles = piles.sort((a, b) => b.amount - a.amount);
@@ -132,7 +137,8 @@ const roleCollector = {
 								
 								const target = Game.getObjectById(cMem.pickup)
 
-								if (creep.withdraw(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+								if (creep.withdraw(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE)
+									creep.moveTo(target, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 							}
 						}
 					} else { // IF MY STORE IS FULL OF ENERGY...
@@ -151,7 +157,8 @@ const roleCollector = {
 
 								const target = pos.findClosestByRange(targets);
 							
-								if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+								if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
+									creep.moveTo(target, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 							} else { // NO SPAWNS/EXTENSIONS NEED FILLING, WHAT ABOUT TOWERS...?
 							
 								let towers = room.find(FIND_MY_STRUCTURES, { filter: (i) => i.structureType == STRUCTURE_TOWER && (i.store.getFreeCapacity() !== 0) })
@@ -159,21 +166,41 @@ const roleCollector = {
 								if (towers.length > 1) towers = towers.sort((a, b) => a.store[RESOURCE_ENERGY] - b.store[RESOURCE_ENERGY]);
 								
 								if (towers.length > 0) { // HEAD TO CLOSEST NON-FULL TOWER AND FILL IT
-									if (creep.transfer(towers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(towers[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+									if (creep.transfer(towers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
+										creep.moveTo(towers[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 								}
 							}
 						}
 					}
 				}
 			} else { // I HAVE A RALLY POINT, LET'S BOOGY!
-				const rally = Game.flags[cMem.rallyPoint];
-				if (pos.isNearTo(rally)) cMem.rallyPoint = 'none';
-				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+        if (cMem.rallyPoint instanceof Array) {
+          if (cMem.rallyPoint.length == 1 && pos.isNearTo(Game.flags[cMem.rallyPoint[0]])) cMem.rallyPoint = 'none';
+					else if (!pos.isNearTo(Game.flags[cMem.rallyPoint[0]]))
+						creep.moveTo(Game.flags[cMem.rallyPoint[0]], { visualizePathStyle: { stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined' } });
+          else {
+            if (cMem.rallyPoint.length > 1)
+              creep.moveTo(Game.flags[cMem.rallyPoint[1]], { visualizePathStyle: { stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined' } });
+            console.log(creep.name + ': Reached rally point \'' + cMem.rallyPoint[0] + '\'');
+            const nextWaypoint = cMem.rallyPoint.shift();
+            if (nextWaypoint === 'undefined') {
+              delete cMem.rallyPoint;
+              cMem.rallyPoint = 'none';
+            }
+          }
+        } else {
+					const rally = Game.flags[cMem.rallyPoint];
+					if (pos.isNearTo(rally)) {
+						console.log(creep.name + ': Reached rally point \'' + cMem.rallyPoint + '\'');
+						cMem.rallyPoint = 'none';
+					}
+					else creep.moveTo(rally, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+				}
 			}
 		} else { // MY AI IS DISABLED, DURRRRR..... *drools*
 			if (!Memory.globalSettings.alertDisabled)
 				console.log('[' + room.name + ']: WARNING: Creep ' + creep.name + '\'s AI is disabled.');
-			creep.say('AI Disabled');
+			creep.say('💤');
     }
 	}
 }

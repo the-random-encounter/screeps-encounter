@@ -100,21 +100,24 @@ const roleUpgrader = {
 				}	else { // I HAVE ENERGY, LET'S UPGRADE THE CONTROLLER, IF MY BUCKET DOESN'T NEED FIXING FIRST...
 
 					if (!cMem.mainBucket) {
-
 						const containers = room.controller.pos.findInRange(FIND_STRUCTURES, 5, { filter: (i) => i.structureType == STRUCTURE_LINK || i.structureType == STRUCTURE_CONTAINER || i.structureType == STRUCTURE_STORAGE });
-						const closestContainer = pos.findClosestByRange(containers);
-						cMem.mainBucket = closestContainer.id;
+						if (containers.length > 0)
+							cMem.mainBucket = containers[0].id;
 					}
 
-					const mainBucket = Game.getObjectById(cMem.mainBucket);
+					if (cMem.mainBucket) {
+						const mainBucket = Game.getObjectById(cMem.mainBucket);
 
-					if (mainBucket && mainBucket.structureType == STRUCTURE_CONTAINER) {
+						if (mainBucket && mainBucket.structureType == STRUCTURE_CONTAINER) {
 
-						if (mainBucket.hits < mainBucket.hitsMax) creep.repair(mainBucket);
-						else {
+							if (mainBucket.hits < mainBucket.hitsMax) creep.repair(mainBucket);
+							else {
 
-							if (creep.upgradeController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+								if (creep.upgradeController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+							}
 						}
+					} else {
+						if (creep.upgradeController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller, { visualizePathStyle: { stroke: '#ffff00', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 					}
 				}
 			
@@ -123,14 +126,32 @@ const roleUpgrader = {
 				}
 
 			} else { // I HAVE A RALLY POINT, LET'S BOOGY!
-				const rally = Game.flags[cMem.rallyPoint];
-				if (pos.isNearTo(rally)) cMem.rallyPoint = 'none';
-				else creep.moveTo(rally, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+        if (cMem.rallyPoint instanceof Array) {
+          if (cMem.rallyPoint.length == 1 && pos.isNearTo(Game.flags[cMem.rallyPoint[0]])) cMem.rallyPoint = 'none';
+          else if (!pos.isNearTo(Game.flags[cMem.rallyPoint[0]])) creep.moveTo(Game.flags[cMem.rallyPoint[0]], { visualizePathStyle: { stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined' } });
+          else {
+            if (cMem.rallyPoint.length > 1)
+              creep.moveTo(Game.flags[cMem.rallyPoint[1]], { visualizePathStyle: { stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined' } });
+            console.log(creep.name + ': Reached rally point \'' + cMem.rallyPoint[0] + '\'');
+            const nextWaypoint = cMem.rallyPoint.shift();          
+            if (nextWaypoint === 'undefined') {
+              delete cMem.rallyPoint;
+              cMem.rallyPoint = 'none';
+            }
+          }
+        } else {
+					const rally = Game.flags[cMem.rallyPoint];
+					if (pos.isNearTo(rally)) {
+						console.log(creep.name + ': Reached rally point \'' + cMem.rallyPoint + '\'');
+						cMem.rallyPoint = 'none';
+					}
+					else creep.moveTo(rally, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+				}
 			}
 		}	else { // AI IS DISABLED
 			if (!Memory.globalSettings.alertDisabled)
 				console.log('[' + room.name + ']: WARNING: Creep ' + creep.name + '\'s AI is disabled.');
-			creep.say('AI Disabled');
+			creep.say('💤');
 		}
 	}
 }
