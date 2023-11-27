@@ -600,3 +600,42 @@ global.getBody = function(segment, room) {
 
 	return body;
 }
+
+global.pushWaypoints = function (creepName, waypoints) {
+	
+	const creep = Memory.creeps[creepName];
+
+	if (waypoints instanceof Array) {
+		if (creep.memory.rallyPoint == 'none') {
+			delete creep.memory.rallyPoint;
+			creep.memory.rallyPoint = waypoints;
+			return waypoints;
+		} else if (creep.memory.rallyPoint instanceof Array) {
+			let oldRallyPoints = creep.memory.rallyPoint;
+			const newRallyPoints = oldRallyPoints.concat(waypoints);
+			creep.memory.rallyPoint = newRallyPoints;
+			return newRallyPoints;
+		} else if (creep.memory.rallyPoint !== 'none' && typeof creep.memory.rallyPoint === 'string') {
+			const oldRallyPoint = [creep.memory.rallyPoint];
+			const newRallyPoints = oldRallyPoints.concat(waypoints);
+			creep.memory.rallyPoint = newRallyPoints;
+			return newRallyPoints;
+		}
+	} else if (typeof waypoints === 'string') {
+		if (creep.memory.rallyPoint == 'none') {
+			delete creep.memory.rallyPoint;
+			creep.memory.rallyPoint = waypoints;
+			return waypoints;
+		} else if (creep.memory.rallyPoint instanceof Array) {
+			let currentRallyPoints = creep.memory.rallyPoint;
+			currentRallyPoints.push(waypoints);
+			creep.memory.rallyPoint.push(waypoints);
+			return currentRallyPoints;
+		} else if (creep.memory.rallyPoint !== 'none' && typeof creep.memory.rallyPoint === 'string') {
+			const currentRallyPoint = creep.memory.rallyPoint;
+			const newRallyPoints = [currentRallyPoint, waypoints];
+			creep.memory.rallyPoint = newRallyPoints;
+			return newRallyPoints;
+		}
+	}
+}
