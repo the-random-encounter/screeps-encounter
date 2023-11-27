@@ -55,24 +55,48 @@ Spawn.prototype.determineBodyparts = function (creepRole, maxEnergy = false) {
 		
 			break;
 		case 'runner':
+
+			const maxCarryCost = Math.ceil(maxEnergy / 3 * 2);
+			const maxMoveCost = Math.floor(maxEnergy / 3);
+			const maxCarryParts = maxCarryCost / 50;
+			const maxMoveParts = maxMoveCost / 50;
+
+			let currCarryCost = 0;
+			let currMoveCost = 0;
+			//let segmentCost = _.sum(segment, s => BODYPART_COST[s]);
 			const locality = this.room.memory.data.logisticalPairs[this.room.memory.data.pairCounter][3];
 			const pathLen = this.room.memory.data.logisticalPairs[this.room.memory.data.pairCounter][5];
 			const carryParts = (Math.ceil(Math.ceil(pathLen / 5) * 5) * 2 / 5) + 1;
 			const moveParts = Math.ceil(carryParts / 2);
-			const partCost = (carryParts * 50) + (moveParts * 50);
+			
 			let bodyArray = [];
-			for (let i = carryParts; i > 0; i--) bodyArray.push(CARRY);
-			for (let i = moveParts; i > 0; i--) bodyArray.push(MOVE);
+			for (let i = carryParts; i > 0; i--) {
+				if (currCarryCost < maxCarryCost) {
+					bodyArray.push(CARRY);
+					currCarryCost += 50;
+				}
+			}
+			for (let i = moveParts; i > 0; i--) {
+				if (currMoveCost < maxMoveCost) {
+					bodyArray.push(MOVE);
+					currMoveCost += 50;
+				}
+			}
+
+			const partCost = currCarryCost + currMoveCost;
+
 			if (locality == 'remote') {
 				let isEven = carryParts.length % 2;
 				if (isEven == 0) {
-					bodyArray.push(WORK);
-					bodyArray.push(MOVE);
+					if (maxEnergy - partCost >= 150) {
+						bodyArray.push(WORK);
+						bodyArray.push(MOVE);
+					}
 				} else {
-					bodyArray.push(WORK);
-				}
+					if (maxEnergy - partCost >= 100)
+						bodyArray.push(WORK);
+					}
 			}
-			console.log(bodyArray);
 			return bodyArray;
 			
 		case 'healer':
