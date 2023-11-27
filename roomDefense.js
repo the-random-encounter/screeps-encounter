@@ -19,7 +19,7 @@ global.roomDefense = function (room) {
 				
 				if (closestDamagedCreep) {
 					tower.heal(closestDamagedCreep);
-				} else {
+				} else {/*
 					if (tower.room.memory.data.towerLRT === undefined)
 						tower.room.memory.data.towerLRT = '';
 
@@ -30,7 +30,7 @@ global.roomDefense = function (room) {
 						else if (lastRT.hits == lastRT.hitsMax)
 							tower.room.memory.data.towerLRT = '';
 						
-					} else {
+					} else {*/
 						if (tower.room.memory.settings.flags.towerRepairBasic == true) {
 
 							let ramparts = [];
@@ -48,7 +48,7 @@ global.roomDefense = function (room) {
 					
 							validTargets = validTargets.concat(targets);
 						
-							let roads = tower.room.find(FIND_STRUCTURES, { filter: (i) => (i.hits < i.hitsMax) && (i.structureType == STRUCTURE_ROAD) });
+							let roads = tower.room.find(FIND_STRUCTURES, { filter: (i) => (i.hits < i.hitsMax) && (i.hitsMax - i.hits <= 500) && (i.structureType == STRUCTURE_ROAD) });
 							validTargets = validTargets.concat(roads);
 
 							if (tower.room.memory.settings.flags.towerRepairDefenses) {
@@ -72,6 +72,6 @@ global.roomDefense = function (room) {
 					}
 				}
 			}	
-		}
+		//}
 	});
 }
