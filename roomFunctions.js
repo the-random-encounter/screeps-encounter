@@ -1283,7 +1283,7 @@ Room.prototype.setCraneSpot 							= function(posX, posY) {
 	this.memory.data.craneSpot = [posX, posY];
 	console.log('[' + this.name + ']: Set craneSpot to ' + posX + ', ' + posY + '.');
 }
-Room.prototype.setRemoteTargets 					= function (roomName, roomPos, waypoints = false, rbCount = 0, rlCount = 0, override = false) {
+Room.prototype.setRemoteTargets 					= function (roomName, roomPos, waypoints = false, rbCount = 0, rlCount = 0, claimRoom = false, override = false) {
 	if (override && this.memory.data.remoteWorkRoom !== roomName)
 		return 'Current remoteWorkRoom already exists and override flag is not set.'; 
 	if (!validateRoomName(roomName))
@@ -1296,7 +1296,7 @@ Room.prototype.setRemoteTargets 					= function (roomName, roomPos, waypoints = 
 
 	const homeRoomMem = this.memory.data.remoteLogistics[roomName];
 
-	let report = '>> REMOTE LOGISTICS REPORT (' + roomName + ')-----------------\n';
+	let report = '>> REMOTE LOGISTICS REPORT (' + roomName + ')-----------------';
 
 	if (roomPos instanceof Array) {
 		if (typeof roomPos[0] === 'number' && typeof roomPos[1] === 'number') {
@@ -1304,17 +1304,20 @@ Room.prototype.setRemoteTargets 					= function (roomName, roomPos, waypoints = 
 			report += '\n>> LOGISTICS TARGET: X|' + roomPos[0] + ' Y|' + roomPos[1];
 		}
 	}
-	
+	if (claimRoom) {
+		this.memory.data.claimRoom = roomName;
+	}
+	this.memory.data.remoteWorkRoom = roomName;
 	homeRoomMem.roomName = roomName;
 	homeRoomMem.desiredBuilderCount = rbCount;
 	homeRoomMem.desiredLogisticianCount = rlCount;
 
-	report += '\n>> DESIRED BUILDER COUNT: ' + rbCount;
-	report += '\n>> DESIRED LOGISTICIAN COUNT: ' + rlCount;
+	report += '\n>>>> DESIRED BUILDER COUNT: ' + rbCount;
+	report += '\n>>>> DESIRED LOGISTICIAN COUNT: ' + rlCount;
 	if (waypoints) {
 		if (isArray(waypoints)) {
-			homeRoomMem.travelWaypoints = waypoints;
-			report += '\n>> WAYPOINTS: ' + waypoints;
+			homeRoomMem.waypoints = waypoints;
+			report += '\n>>>> WAYPOINTS: ' + waypoints;
 		}
 	}
 
