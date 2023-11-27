@@ -12,55 +12,44 @@ const roleWarrior = {
 		if (cMem.attackRoom === undefined) cMem.attackRoom = rMem.data.attackRoomTarget || room.name;
 		if (cMem.rallyPoint === undefined) cMem.rallyPoint = 'none';
 		if (cMem.customAttackTarget === undefined) cMem.customAttackTarget = rMem.data.customAttackTarget || 'none';
+		if (cMem.squad === undefined) cMem.squad = rMem.data.squads[0];
+		if (cMem.subTeam === undefined) cMem.subTeam = 'combatants';
 
 		if (!cMem.disableAI) {
 
 			if (cMem.rallyPoint == 'none') {
 
-				if (creep.ticksToLive <= 2) {
-					creep.drop(RESOURCE_ENERGY);
-					creep.say('☠️');
-				}
+				if (creep.ticksToLive <= 2)	creep.say('☠️');
 
 				if (pos.x == 49) creep.move(LEFT);
 				else if (pos.x == 0) creep.move(RIGHT);
 				else if (pos.y == 49) creep.move(TOP);
 				else if (pos.y == 0) creep.move(BOTTOM);
 
-				if (cMem.customAttackTarget !== 'none') {
-					const cAT = Game.getObjectById(cMem.customAttackTarget)
-					if (creep.getActiveBodyparts(WORK) > 0) {
-						if (creep.dismantle(cAT) == ERR_NOT_IN_RANGE)
-							creep.moveTo(cAT, { visualizePathStyle: { stroke: '#ff0000', oapcity: 0.5, lineStyle: 'undefined' } });
-					} else {
-						if (creep.attack(cAT) == ERR_NOT_IN_RANGE)
-							creep.moveTo(cAT, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
-					}
-				} else {
-					if (room.name !== cMem.attackRoom) {
-						creep.moveTo(Game.flags[cMem.attackRoom], { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
-					} else {
-						const hostiles = room.find(FIND_HOSTILE_CREEPS);
-						const target = pos.findClosestByRange(hostiles);
-				
-						if (target) {
-							if (creep.attack(target) == ERR_NOT_IN_RANGE)
-								creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
-						} else {
-							const towers = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
-							const target = pos.findClosestByRange(towers);
+				if (Memory.rooms[cMem.homeRoom].data.attackSignal == true) {
 
+					if (cMem.customAttackTarget !== 'none') {
+						const cAT = Game.getObjectById(cMem.customAttackTarget)
+						if (creep.getActiveBodyparts(WORK) > 0) {
+							if (creep.dismantle(cAT) == ERR_NOT_IN_RANGE)
+								creep.moveTo(cAT, { visualizePathStyle: { stroke: '#ff0000', oapcity: 0.5, lineStyle: 'undefined' } });
+						} else {
+							if (creep.attack(cAT) == ERR_NOT_IN_RANGE)
+								creep.moveTo(cAT, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+						}
+					} else {
+						if (room.name !== cMem.attackRoom) {
+							creep.moveTo(Game.flags[cMem.attackRoom], { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+						} else {
+							const hostiles = room.find(FIND_HOSTILE_CREEPS);
+							const target = pos.findClosestByRange(hostiles);
+				
 							if (target) {
-								if (creep.getActiveBodyparts(WORK) > 0) {
-									if (creep.dismantle(target) == ERR_NOT_IN_RANGE)
-										creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', oapcity: 0.5, lineStyle: 'undefined' } });
-								} else {
-									if (creep.attack(target) == ERR_NOT_IN_RANGE)
-										creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
-								}
+								if (creep.attack(target) == ERR_NOT_IN_RANGE)
+									creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
 							} else {
-								const spawns = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_SPAWN } });
-								const target = pos.findClosestByRange(spawns);
+								const towers = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
+								const target = pos.findClosestByRange(towers);
 
 								if (target) {
 									if (creep.getActiveBodyparts(WORK) > 0) {
@@ -71,8 +60,9 @@ const roleWarrior = {
 											creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
 									}
 								} else {
-									const structures = room.find(FIND_HOSTILE_STRUCTURES);
-									const target = pos.findClosestByRange(structures);
+									const spawns = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_SPAWN } });
+									const target = pos.findClosestByRange(spawns);
+
 									if (target) {
 										if (creep.getActiveBodyparts(WORK) > 0) {
 											if (creep.dismantle(target) == ERR_NOT_IN_RANGE)
@@ -81,17 +71,32 @@ const roleWarrior = {
 											if (creep.attack(target) == ERR_NOT_IN_RANGE)
 												creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
 										}
-									} else if (creep.getActiveBodyparts(CLAIM) > 0) {
-										const controller = room.controller;
+									} else {
+										const structures = room.find(FIND_HOSTILE_STRUCTURES);
+										const target = pos.findClosestByRange(structures);
+										if (target) {
+											if (creep.getActiveBodyparts(WORK) > 0) {
+												if (creep.dismantle(target) == ERR_NOT_IN_RANGE)
+													creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', oapcity: 0.5, lineStyle: 'undefined' } });
+											} else {
+												if (creep.attack(target) == ERR_NOT_IN_RANGE)
+													creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+											}
+										} else if (creep.getActiveBodyparts(CLAIM) > 0) {
+											const controller = room.controller;
 
-										if (creep.attackController(controller) == ERR_NOT_IN_RANGE)
-											creep.moveTo(controller, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+											if (creep.attackController(controller) == ERR_NOT_IN_RANGE)
+												creep.moveTo(controller, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+										}
 									}
 								}
 							}
 						}
 					}
 				}
+				const musterFlag = cMem.squad + '-muster';
+				if (!pos.isNearTo(Game.flags[musterFlag]))
+					creep.moveTo(Game.flags[musterFlag], { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
 			} else { // I HAVE A RALLY POINT, LET'S BOOGY!
         if (cMem.rallyPoint instanceof Array) {
           if (cMem.rallyPoint.length == 1 && pos.isNearTo(Game.flags[cMem.rallyPoint[0]])) cMem.rallyPoint = 'none';

@@ -12,6 +12,8 @@ const roleHealer = {
 		if (cMem.attackRoom === undefined) cMem.attackRoom = room.name;
 		if (cMem.rallyPoint === undefined) cMem.rallyPoint = 'none';
 		if (cMem.customAttackTarget === undefined) cMem.customAttackTarget = 'none';
+		if (cMem.squad === undefined) cMem.squad = rMem.data.squads[0];
+		if (cMem.subTeam === undefined) cMem.subTeam = 'healers';
 		
 		if (!cMem.disableAI) {
 
@@ -24,12 +26,35 @@ const roleHealer = {
 				
 				if (creep.ticksToLive <= 2) creep.say('☠️');
 				
-				const target = pos.findClosestByRange(FIND_MY_CREEPS, { filter: function (object) { return object.memory.unit == 'squad_1' } });
+				if (Memory.rooms[cMem.homeRoom].data.attackSignal == true) {
+					const target = pos.findClosestByRange(FIND_MY_CREEPS, { filter: (object) => object.memory.squad == cMem.squad && object.memory.subTeam == 'combatants' });
 				
-				if (target) {
-					creep.moveTo(target, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
-					if (pos.isNearTo(target))	creep.heal(target);
-					else creep.rangedHeal(target);
+					if (target) {
+						creep.moveTo(target, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
+						if (pos.isNearTo(target)) {
+							if (target.hits < target.hitsMax) creep.heal(target);
+						}
+						else {
+							if (target.hits < target.hitsMax) creep.rangedHeal(target);
+							creep.moveTo(target);
+						}
+					} else {
+						const secondaryTarget = pos.findClosestByRange(FIND_MY_CREEPS, { filter: (object) => object.memory.squad == cMem.squad && (object.memory.subTeam == 'combatants' || object.memory.subTeam == 'healers') });
+
+						if (secondaryTarget) {
+							creep.moveTo(secondaryTarget, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
+							if (pos.isNearTo(secondaryTarget)) {
+								if (secondaryTarget.hits < secondaryTarget.hitsMax) creep.heal(secondaryTarget);
+							}
+							else {
+								if (secondaryTarget.hits < secondaryTarget.hitsMax) creep.rangedHeal(secondaryTarget);
+							}
+						}
+					}
+				} else {
+					const musterFlag = cMem.squad + '-muster';
+					if (!pos.isNearTo(Game.flags[musterFlag]))
+						creep.moveTo(Game.flags[musterFlag], { visualizePathStyle: { stroke: '#00ff00', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
 				}
 			} else { // I HAVE A RALLY POINT, LET'S BOOGY!
         if (cMem.rallyPoint instanceof Array) {
@@ -44,7 +69,7 @@ const roleHealer = {
               delete cMem.rallyPoint;
               cMem.rallyPoint = 'none';
             }
-          }
+					}
         } else {
 					const rally = Game.flags[cMem.rallyPoint];
 					if (pos.isNearTo(rally)) {
