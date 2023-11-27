@@ -27,7 +27,13 @@ const roleReserver = {
 
 				if (room.name == cMem.targetRoom) {
 					if (!rMem.objects) room.cacheObjects();
-					if (creep.reserveController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller, { visualizePathStyle: { stroke: '#ffffff', opacity: 0.3 } });
+					if (typeof Game.rooms[room.name].controller.owner === 'undefined') {
+						if (creep.reserveController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller, { visualizePathStyle: { stroke: '#ffffff', opacity: 0.3 } });
+					} else if (typeof Game.rooms[room.name].controller.owner === 'object') {
+						if (Game.rooms[room.name].controller.owner.username !== 'randomencounter') {
+							if (creep.attackController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller, { visualizePathStyle: { stroke: '#ffffff', opacity: 0.3 } });
+						}
+					}
 					if (!room.controller.sign)
 						creep.signController(room.controller, 'There\'s no place like 127.0.0.1');
 				} else {
