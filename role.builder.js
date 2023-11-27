@@ -35,12 +35,11 @@ const roleBuilder = {
       
         if (creep.store.getUsedCapacity() == 0) {
     
-          switch (rMem.settings.flags.centralStorageLogic || false) {
+          switch (Memory.rooms[cMem.homeRoom].settings.flags.centralStorageLogic || false) {
             case true: {
             
               const droppedPiles = room.find(FIND_DROPPED_RESOURCES);
-              const containersWithEnergy = /*Game.getObjectById(rMem.objects.storage[0]) ||*/ room.find(FIND_STRUCTURES, {
-                filter: (i) => ((i.structureType == STRUCTURE_STORAGE || i.structureType == STRUCTURE_CONTAINER) && i.store[RESOURCE_ENERGY] > 0) } );
+              const containersWithEnergy = room.find(FIND_STRUCTURES, { filter: (i) => ((i.structureType == STRUCTURE_STORAGE || i.structureType == STRUCTURE_CONTAINER) && i.store[RESOURCE_ENERGY] > 0) } );
               const targets = droppedPiles.concat(containersWithEnergy);
               let target = pos.findClosestByRange(targets);
 
@@ -64,8 +63,10 @@ const roleBuilder = {
                   const boxObj = Game.getObjectById(outboxes[i]);
                   boxes.push(boxObj);
                 }
+                
+                if (boxes.length > 1)
+                  boxes.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
 
-                boxes.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
                 let closestBox = boxes[0];
               
                 if (creep.withdraw(closestBox, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(closestBox, { visualizePathStyle: { stroke: '#0000ff', opacity: 0.3, lineStyle: 'dotted' } })
@@ -96,7 +97,14 @@ const roleBuilder = {
         } else {
         
           let cSites = room.find(FIND_MY_CONSTRUCTION_SITES);
-          const target = cSites[0];
+          if (rMem.settings.flags.sortConSites)
+            cSites = cSites.sort((a, b) => b.progress - a.progress);
+          
+          let target;
+          if (rMem.settings.flags.closestConSites)
+            target = pos.findClosestByRange(cSites);
+          else
+            target = cSites[0];
 
           if (target) {
             if (creep.build(target) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: '#0000ff', opacity: 0.5, lineStyle: 'dotted', ignoreCreeps: true } });
