@@ -687,7 +687,7 @@ module.exports.loop = function () {
 						newName = 'H' + harvesterCount;						
 					}
 				} else if ((collectors.length < collectorTarget) || (collectors.length <= collectorTarget && collectorDying && collectorTarget !== 0)) {
-					newName = 'C' + collectorsCount;
+					newName = 'C' + collectorCount;
 					while (readySpawn.spawnCreep(availableVariants.collector, newName, { memory: { role: 'collector', roleForQuota: 'collector', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 						collectorCount++;
 						newName = 'C' + collectorCount;
