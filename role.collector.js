@@ -80,9 +80,11 @@ const roleCollector = {
 					}
 				} else { // NO INVADERS TO LOOT, SO...
 					if (creep.store[RESOURCE_ENERGY] == 0) { // NO ENERGY, SO...
+						if (cMem.tombXfer) delete cMem.tombXfer;
+						if (cMem.tombItem) delete cMem.tombItem;
 
 						let droppedPiles = room.find(FIND_DROPPED_RESOURCES);
-						let tombstones = room.find(FIND_TOMBSTONES, {filter: {my: true} });
+						let tombstones = room.find(FIND_TOMBSTONES, { filter: (i) => i.store.getUsedCapacity() > 0 && i.creep.my });
 						droppedPiles = droppedPiles.sort((a, b) => b.amount - a.amount);
 
 						if (droppedPiles.length > 0) {
@@ -90,23 +92,27 @@ const roleCollector = {
 							if (creep.pickup(droppedPiles[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(droppedPiles[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 
 						} else if (tombstones.length > 0) {
-
-							if (creep.withdraw(tombstones[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(tombstones[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+							cMem.tombXfer = true;
+							const tombstoneItem = Object.keys(tombstones[0].store);
+							cMem.tombItem = tombstoneItem[0];
+							if (creep.withdraw(tombstones[0], cMem.tombItem) == ERR_NOT_IN_RANGE) creep.moveTo(tombstones[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+							
 
 						} else { // NO DROPPED PILES, NEED TO FIND OTHER SOURCES OF ENERGY...
 
 							if (room.storage) { // IF RCL IS OVER 3 AND WE HAVE A STORAGE
-
-								const maxInv = creep.getActiveBodyparts(CARRY) * 50;
-
-								if (room.storage.store[RESOURCE_ENERGY] >= (maxInv * 0.75).toFixed(0)) {
-
-									if (!cMem.pickup) cMem.pickup = room.storage.id;
-
-									const storage = room.storage;
-
+								if (!cMem.pickup) cMem.pickup = room.storage.id;
+								const storage = room.storage;
+								if (room.storage.store[RESOURCE_ENERGY] >= creep.store.getCapacity()) {
 									if (creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(storage, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+								} else {
+									let piles = creep.room.find(FIND_DROPPED_RESOURCES);
+									piles = piles.sort((a, b) => b.amount - a.amount);
 
+									if (piles.length > 0) {
+										if (creep.pickup(piles[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
+											creep.moveTo(piles[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+									}
 								}
 							} else { // IF RCL IS 3 OR LESS (AND THUS NO STORAGE)
 								
@@ -131,21 +137,30 @@ const roleCollector = {
 						}
 					} else { // IF MY STORE IS FULL OF ENERGY...
 
-						const targets = room.find(FIND_STRUCTURES, { filter: (i) => ((i.structureType == STRUCTURE_SPAWN || i.structureType == STRUCTURE_EXTENSION) && i.store.getFreeCapacity(RESOURCE_ENERGY) > 0) });
+						if (cMem.tombXfer) {
+							const target = room.storage;
+							if (target) {
+								if (creep.transfer(target, cMem.tombItem) == ERR_NOT_IN_RANGE) {
+									creep.moveTo(target, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+								}
+							}
+						} else {
+							const targets = room.find(FIND_STRUCTURES, { filter: (i) => ((i.structureType == STRUCTURE_SPAWN || i.structureType == STRUCTURE_EXTENSION) && i.store.getFreeCapacity(RESOURCE_ENERGY) > 0) });
 
-						if (targets.length > 0) { // FIND SPAWNS & EXTENSIONS THAT NEED TO  BE FILLED
+							if (targets.length > 0) { // FIND SPAWNS & EXTENSIONS THAT NEED TO  BE FILLED
 
-							const target = pos.findClosestByRange(targets);
+								const target = pos.findClosestByRange(targets);
 							
-							if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
-						} else { // NO SPAWNS/EXTENSIONS NEED FILLING, WHAT ABOUT TOWERS...?
+								if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+							} else { // NO SPAWNS/EXTENSIONS NEED FILLING, WHAT ABOUT TOWERS...?
 							
-							let towers = room.find(FIND_MY_STRUCTURES, { filter: (i) => i.structureType == STRUCTURE_TOWER && (i.store.getFreeCapacity() !== 0) })
+								let towers = room.find(FIND_MY_STRUCTURES, { filter: (i) => i.structureType == STRUCTURE_TOWER && (i.store.getFreeCapacity() !== 0) })
 							
-							if (towers.length > 1) towers = towers.sort((a, b) => a.store[RESOURCE_ENERGY] - b.store[RESOURCE_ENERGY]);
+								if (towers.length > 1) towers = towers.sort((a, b) => a.store[RESOURCE_ENERGY] - b.store[RESOURCE_ENERGY]);
 								
-							if (towers.length > 0) { // HEAD TO CLOSEST NON-FULL TOWER AND FILL IT
-								if (creep.transfer(towers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(towers[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+								if (towers.length > 0) { // HEAD TO CLOSEST NON-FULL TOWER AND FILL IT
+									if (creep.transfer(towers[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(towers[0], { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+								}
 							}
 						}
 					}
