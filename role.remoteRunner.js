@@ -37,6 +37,9 @@ const roleRemoteRunner = {
 				
 					if (target) {
 						if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+					} else {
+						if (creep.room.name !== cMem.outpostRoom)
+							creep.moveTo(Game.flags[cMem.outpostRoom], { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 					}
 				}
 			
@@ -48,7 +51,6 @@ const roleRemoteRunner = {
 						}
 						else {
 							const roadUnderCreep = room.find(FIND_STRUCTURES, { filter: (i) => (i.structureType == STRUCTURE_ROAD && i.pos.x == pos.x && i.pos.y == pos.y && i.hits !== i.hitsMax) })
-							//const roadTarget = pos.findClosestByRange(roadUnderCreep);
 							if (roadUnderCreep.length > 0) creep.repair(roadUnderCreep[0]);
 							else creep.moveTo(target, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 						}
