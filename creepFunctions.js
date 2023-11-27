@@ -45,13 +45,16 @@ Creep.prototype.assignHarvestSource = function(noIncrement) {
 	else if (role == 'remoteharvester') roomSources = room.memory.outposts.aggregateSourceList;
 
 	// in case there is no lastAssigned counter, create it
-	if (room.memory.objects.lastAssigned == undefined) {
-		room.memory.objects.lastAssigned = 0;
-		console.log('Creating \'lastAssigned\' memory object.')
-	}
-	if (room.memory.outposts.aggLastAssigned == undefined) {
-		room.memory.outposts.addLastAssigned = 0;
-		console.log('Creating \'aggLastAssigned\' memory object.');
+	if (role == 'harvester') {
+		if (room.memory.objects.lastAssigned === undefined) {
+			room.memory.objects.lastAssigned = 0;
+			console.log('Creating \'lastAssigned\' memory object.')
+		}
+	} else if (role == 'remoteharvester') {
+		if (room.memory.outposts.aggLastAssigned === undefined) {
+			room.memory.outposts.aggLastAssigned = 0;
+			console.log('Creating \'aggLastAssigned\' memory object.');
+		}
 	}
 	
 	// separate last assigned value for contingency condition
@@ -462,10 +465,12 @@ Creep.prototype.assignLogisticalPair = function (logParam) {
 			console.log('No pairs to assign.');
 			return;
 		}
+			
 		else if (assignedPair && assignedPair.length >= 3) {
 			this.memory.pickup = assignedPair[0];
 			this.memory.dropoff = assignedPair[1];
 			this.memory.cargo = assignedPair[2];
+			this.memory.pathLength = assignedPair[5];
 			console.log('[' + this.room.name + ']: Assigned pair (PICKUP: ' + assignedPair[0] + ') | (DROPOFF: ' + assignedPair[1] + ') | (CARGO: ' + assignedPair[2] + ') | (LOCALITY: ' + assignedPair[3] + ')');
 			return;
 		} else {
