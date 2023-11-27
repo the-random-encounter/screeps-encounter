@@ -4,32 +4,33 @@
 global.calcTickTime = function(tickSamples = 1000) { // Call this from 1st line of main loop. Can adjust samples used for calculation from there.
     let millis = Date.now();
 
-    // Set some sane defaults
-    if (typeof Memory.lastTickMillis == "undefined") Memory.lastTickMillis = millis - 1010;
-    if (typeof Memory.lastTickTime == "undefined") Memory.lastTickTime = 1.01;
-    if (typeof Memory.tickTimeCount == "undefined") Memory.tickTimeCount = 0;
-    if (typeof Memory.tickTimeTotal == "undefined") Memory.tickTimeTotal = 0;
+	// Set some sane defaults
+		if (typeof Memory.time == "undefined") Memory.time = {};
+    if (typeof Memory.time.lastTickMillis == "undefined") Memory.time.lastTickMillis = millis - 1010;
+    if (typeof Memory.time.lastTickTime == "undefined") Memory.time.lastTickTime = 1.01;
+    if (typeof Memory.time.tickTimeCount == "undefined") Memory.time.tickTimeCount = 0;
+    if (typeof Memory.time.tickTimeTotal == "undefined") Memory.time.tickTimeTotal = 0;
     
-    let lastTickMillis = Number(Memory.lastTickMillis);
-    let tickTimeCount = Number(Memory.tickTimeCount);
-    let tickTimeTotal = Number(Memory.tickTimeTotal);
+    let lastTickMillis = Number(Memory.time.lastTickMillis);
+    let tickTimeCount = Number(Memory.time.tickTimeCount);
+    let tickTimeTotal = Number(Memory.time.tickTimeTotal);
 
     if (tickTimeCount >= (tickSamples-1)) {
         tickTimeTotal += millis - lastTickMillis;
         tickTimeCount++;
         global.tickTime = (tickTimeTotal / tickTimeCount) / 1000;
         console.log("Calculated tickTime as", global.tickTime, "from", tickTimeCount, "samples.");
-        Memory.lastTickTime = global.tickTime;
-        Memory.tickTimeTotal = millis - lastTickMillis;
-        Memory.tickTimeCount = 1;
-        Memory.lastTickMillis = millis;
+        Memory.time.lastTickTime = global.tickTime;
+        Memory.time.tickTimeTotal = millis - lastTickMillis;
+        Memory.time.tickTimeCount = 1;
+        Memory.time.lastTickMillis = millis;
     } else { 
-        global.tickTime = Number(Memory.lastTickTime);
+        global.tickTime = Number(Memory.time.lastTickTime);
         tickTimeTotal += millis - lastTickMillis;
-        Memory.tickTimeTotal = tickTimeTotal;
+        Memory.time.tickTimeTotal = tickTimeTotal;
         tickTimeCount++;
-        Memory.tickTimeCount = tickTimeCount;
-        Memory.lastTickMillis = millis;
+        Memory.time.tickTimeCount = tickTimeCount;
+        Memory.time.lastTickMillis = millis;
     }
     return 'Done';
 }
@@ -224,7 +225,7 @@ global.visualRCProgress = function (controllerID) {
 
 	const ticksRemaining = (progressRemaining / avgProgressPerTick).toFixed(0);
 
-	const currentTickDuration = Memory.lastTickTime.toFixed(2);
+	const currentTickDuration = Memory.time.lastTickTime.toFixed(2);
 	const secondsRemaining = ticksRemaining * currentTickDuration;
 	let days = Math.floor(secondsRemaining / (3600 * 24));
 	let hours = Math.floor(secondsRemaining % (3600 * 24) / 3600);
@@ -527,7 +528,7 @@ global.validateFlagName = function (input) {
 	}
 }
 
-global.calcPath = function (startPos, endPos) {
+global.calcPath = function (startPos, endPos, returnLength = false) {
 	
 	if (!startPos instanceof RoomPosition && !endPos instanceof RoomPosition)
 		return 'Neither of the provided parameters are valid RoomPosition objects.';
@@ -553,32 +554,41 @@ global.calcPath = function (startPos, endPos) {
         // PathFinder supports searches which span multiple rooms 
         // you should be careful!
         if (!room) return;
-        let costs = new PathFinder.CostMatrix;
+				if (Memory.matrices && Memory.matrices.general !== 'undefined') {
+					let costs = PathFinder.CostMatrix.deserialize(Memory.matrices.general);
+					return costs;
+				} else {
+					let costs = new PathFinder.CostMatrix;
+				
 
-        room.find(FIND_STRUCTURES).forEach(function(struct) {
-          if (struct.structureType === STRUCTURE_ROAD) {
-            // Favor roads over plain tiles
-            costs.set(struct.pos.x, struct.pos.y, 1);
-          } else if (struct.structureType !== STRUCTURE_CONTAINER &&
-                     (struct.structureType !== STRUCTURE_RAMPART ||
-                      !struct.my)) {
-            // Can't walk through non-walkable buildings
-            costs.set(struct.pos.x, struct.pos.y, 255);
-          }
-        });
+					room.find(FIND_STRUCTURES).forEach(function (struct) {
+						if (struct.structureType === STRUCTURE_ROAD) {
+							// Favor roads over plain tiles
+							costs.set(struct.pos.x, struct.pos.y, 1);
+						} else if (struct.structureType !== STRUCTURE_CONTAINER &&
+							(struct.structureType !== STRUCTURE_RAMPART ||
+								!struct.my)) {
+							// Can't walk through non-walkable buildings
+							costs.set(struct.pos.x, struct.pos.y, 255);
+						}
+					});
 
-        // Avoid creeps in the room
-        //room.find(FIND_CREEPS).forEach(function(creep) {
-        //  costs.set(creep.pos.x, creep.pos.y, 0xff);
-        //});
-
-        return costs;
+					// Avoid creeps in the room
+					//room.find(FIND_CREEPS).forEach(function(creep) {
+					//  costs.set(creep.pos.x, creep.pos.y, 0xff);
+					//});
+					if (!Memory.matrices) Memory.matrices = {};
+					Memory.matrices[general] = costs.serialize();
+					return costs;
+				}
       },
     }
 	);
 	
-
-	return [ret.path, ret.path.length];
+	if (returnLength)
+		return [ret.path, ret.path.length];
+	else
+		return ret.path;
 }
 
 global.getBody = function(segment, room) {
@@ -635,7 +645,7 @@ global.pushWaypoints = function (creepName, waypoints) {
 			const currentRallyPoint = creep.memory.rallyPoint;
 			const newRallyPoints = [currentRallyPoint, waypoints];
 			creep.memory.rallyPoint = newRallyPoints;
-			return newRallyPoints;
+			return newRallyPoints
 		}
 	}
 }
