@@ -466,7 +466,7 @@ Creep.prototype.assignLogisticalPair = function (logParam) {
 			this.memory.pickup = assignedPair[0];
 			this.memory.dropoff = assignedPair[1];
 			this.memory.cargo = assignedPair[2];
-			console.log('[' + this.room.name + ']: Assigned pair (PICKUP: ' + assignedPair[0] + ') | (DROPOFF: ' + assignedPair[1] + ') | (CARGO: ' + assignedPair[2] + ')');
+			console.log('[' + this.room.name + ']: Assigned pair (PICKUP: ' + assignedPair[0] + ') | (DROPOFF: ' + assignedPair[1] + ') | (CARGO: ' + assignedPair[2] + ') | (LOCALITY: ' + assignedPair[3] + ')');
 			return;
 		} else {
 			console.log('[' + this.room.name + ']: Unable to assign pair for creep \'' + this.name + '\'.');
