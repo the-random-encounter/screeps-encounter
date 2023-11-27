@@ -88,7 +88,7 @@ Creep.prototype.assignHarvestSource = function(noIncrement) {
 			room.memory.outposts.aggLastAssigned = 0;
 	}
 
-	console.log('Assigned harvester ' + this.name + ' to source #' + (LA + 1) + ' (ID: ' + assignedSource + ') in room ' + this.room.name)
+	console.log(room.link() + ': Assigned harvester ' + this.name + ' to source #' + (LA + 1) + ' (ID: ' + assignedSource + ') in room ' + this.room.name);
 
 	if (noIncrement) {
 		if (role == 'harvester') room.memory.objects.lastAssigned = LA;
@@ -117,7 +117,7 @@ Creep.prototype.assignRemoteHarvestSource = function(noIncrement = false) {
 
 	if (noIncrement) homeOutposts.aggLastAssigned = lastAss;
 
-	console.log('Assigned remote harvester ' + this.name + ' to remote source #' + (nextAss + 1) + ' (ID: ' + assignedSource + ')');
+	console.log(this.room.link() + ': Assigned remote harvester ' + this.name + ' to remote source #' + (nextAss + 1) + ' (ID: ' + assignedSource + ')');
 
 	return assignedSource;
 }
@@ -393,7 +393,7 @@ Creep.prototype.assignInbox = function(noIncrement) {
 	if (room.memory.settings.containerSettings.lastInbox >= roomInboxes.length)
 		room.memory.settings.containerSettings.lastInbox = 0;
 
-	console.log('Assigned ' + this.memory.role + ' ' + this.name + ' to inbox ID ' + assignedInbox)
+	console.log(room.link() + ': Assigned ' + this.memory.role + ' ' + this.name + ' to inbox ID ' + assignedInbox)
 
 	if (noIncrement)
 		room.memory.settings.containerSettings.lastInbox = LA;
@@ -471,10 +471,10 @@ Creep.prototype.assignLogisticalPair = function (logParam) {
 			this.memory.dropoff = assignedPair[1];
 			this.memory.cargo = assignedPair[2];
 			this.memory.pathLength = assignedPair[5];
-			console.log('[' + this.room.name + ']: Assigned pair (PICKUP: ' + assignedPair[0] + ') | (DROPOFF: ' + assignedPair[1] + ') | (CARGO: ' + assignedPair[2] + ') | (LOCALITY: ' + assignedPair[3] + ')');
+			console.log(this.room.link() + ': Assigned pair (PICKUP: ' + assignedPair[0] + ') | (DROPOFF: ' + assignedPair[1] + ') | (CARGO: ' + assignedPair[2] + ') | (LOCALITY: ' + assignedPair[3] + ')');
 			return;
 		} else {
-			console.log('[' + this.room.name + ']: Unable to assign pair for creep \'' + this.name + '\'.');
+			console.log(this.room.link() + ': Unable to assign pair for creep \'' + this.name + '\'.');
 			return; 
 		}
 	}
