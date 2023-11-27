@@ -41,13 +41,12 @@ const roleRemoteHarvester = {
 								const nearbySites = pos.findInRange(FIND_CONSTRUCTION_SITES, 2);
 								if (nearbySites.length == 0) room.createConstructionSite(pos.x, pos.y, STRUCTURE_CONTAINER);
 								else {
-									const buildersNearby = room.find(FIND_MY_CREEPS, { filter: (i) => i.memory.role = 'remotebuilder' });
+									const buildersNearby = room.find(FIND_MY_CREEPS, { filter: (i) => i.memory.role == 'remotebuilder' });
 									if (buildersNearby.length > 0) {
 										creep.unloadEnergy();
 										creep.harvestEnergy();
 									}
-									else
-										creep.build(nearbySites[0]);
+									else creep.build(nearbySites[0]);
 								}
 							}
 							else {
