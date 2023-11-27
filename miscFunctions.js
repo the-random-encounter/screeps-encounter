@@ -1,6 +1,4 @@
 "use strict";
-// Tick length calculation by Kamots 17 januari 2019
-// Provides global.tickTime as seconds
 global.calcTickTime = function(tickSamples = 1000) { // Call this from 1st line of main loop. Can adjust samples used for calculation from there.
     let millis = Date.now();
 
@@ -86,9 +84,7 @@ global.partCost = function (array) {
 	return runningTotal;
 }
 
-global.GOBI = function (ID) {
-	return Game.getObjectById(ID);
-}
+global.GOBI = function (ID) {	return Game.getObjectById(ID); }
 
 global.MC = function (name, dir) {
 	
@@ -103,42 +99,42 @@ global.MC = function (name, dir) {
 		case 8:
 			break;
 		case 'N':
-		case 'TOP':
+		case TOP:
 		case 'T':
 			dir = 1;
 			break;
 		case 'NE':
-		case 'TOP_RIGHT':
+		case TOP_RIGHT:
 		case 'TR':
 			dir = 2;
 			break;
 		case 'E':
-		case 'RIGHT':
+		case RIGHT:
 		case 'R':
 			dir = 3;
 			break;
 		case 'SE':
-		case 'BOTTOM_RIGHT':
+		case BOTTOM_RIGHT:
 		case 'BR':
 			dir = 4;
 			break;
 		case 'S':
-		case 'BOTTOM':
+		case BOTTOM:
 		case 'B':
 			dir = 5;
 			break;
 		case 'SW':
-		case 'BOTTOM_LEFT':
+		case BOTTOM_LEFT:
 		case 'BL':
 			dir = 6;
 			break;
 		case 'W':
-		case 'LEFT':
+		case LEFT:
 		case 'L':
 			dir = 7;
 			break;
 		case 'NW':
-		case 'TOP_LEFT':
+		case TOP_LEFT:
 		case 'TL':
 			dir = 8;
 			break;
