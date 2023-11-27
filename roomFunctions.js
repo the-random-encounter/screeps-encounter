@@ -8,7 +8,7 @@ Room.prototype.getInboxes 								= function () { return this.memory.settings.co
 Room.prototype.getOutboxes 								= function() { return this.memory.settings.containerSettings.outboxes; 	}
 Room.prototype.setQuota 									= function(roleTarget, newTarget) { this.setTarget(roleTarget, newTarget); }
 
-Room.prototype.calcPath = function (pathName, start, end, walkOnCreeps = true, serializeData = false, maxOps) {
+/*Room.prototype.calcPath = function (pathName, start, end, walkOnCreeps = true, serializeData = false, maxOps) {
 
 	PathFinder.use(true);
 	
@@ -32,7 +32,7 @@ Room.prototype.calcPath = function (pathName, start, end, walkOnCreeps = true, s
 		console.log('Could not generate path.');
 		return null;
 	}	
-}
+}*/
 Room.prototype.cacheObjects 							= function() {
 
 	// declare storage array for objects to cache
@@ -521,122 +521,132 @@ Room.prototype.registerLogisticalPairs 		= function() {
 
 	if (minerals) {
 		mineralOutbox = minerals[0].pos.findClosestByRange(FIND_STRUCTURES, 5, { filter: { structureType: STRUCTURE_CONTAINER } });
-		if (mineralOutbox) {
-			mineralOutbox = mineralOutbox.id;
-			//console.log('RegisterLogisticalPairs: mineralOutbox: ' + mineralOutbox);
-		}
+		if (mineralOutbox) mineralOutbox = mineralOutbox.id;
 	}
 	
 	let energyInbox = this.controller.pos.findInRange(FIND_STRUCTURES, 5, { filter: { structureType: STRUCTURE_CONTAINER } });
-	if (energyInbox.length > 0) {
-		energyInbox = energyInbox[0].id;
-		//console.log('RegisterLogisticalPairs: energyInbox: ' + energyInbox);
-	}
+	if (energyInbox.length > 0) energyInbox = energyInbox[0].id;
 	
 	let storage;
-	if (this.storage)
-		storage = this.storage.id;
+	if (this.storage) storage = this.storage.id;
 		
-	
 	let roomOutboxes = this.memory.settings.containerSettings.outboxes || [];
 	let roomInboxes = this.memory.settings.containerSettings.inboxes || [];
 
 	for (let i = 0; i < sources.length; i++) {
 		let sourceBox = sources[i].pos.findInRange(FIND_STRUCTURES, 3, { filter: { structureType: STRUCTURE_CONTAINER } });
-		if (sourceBox.length > 0) {
-			//console.log('RegisterLogisticalPairs: sourceBox: ' + sourceBox[0].id);
-			energyOutboxes.push(sourceBox[0].id);
-		}
+		if (sourceBox.length > 0)	energyOutboxes.push(sourceBox[0].id);
 	}
 
-	//if (energyOutboxes.length > 0)
-	//	console.log('RegisterLogisticalPairs: energyOutboxes: ' + energyOutboxes);
-
-	if (energyOutboxes.length == 0 && !energyInbox)
-		this.memory.data.noPairs = true;
+	if (energyOutboxes.length == 0 && !energyInbox) this.memory.data.noPairs = true;
 	else {
-		if (this.memory.data.noPairs)
-			delete this.memory.data.noPairs;
+		if (this.memory.data.noPairs) delete this.memory.data.noPairs;
 	}
 
 	for (let i = 0; i < energyOutboxes.length; i++) {
-		if (!roomOutboxes.includes(energyOutboxes[i]))
-			roomOutboxes.push(energyOutboxes[i]);
+		if (!roomOutboxes.includes(energyOutboxes[i])) roomOutboxes.push(energyOutboxes[i]);
 		this.setOutbox(energyOutboxes[i]);
 	}
 
-	if (!roomInboxes.includes(energyInbox))
-		roomInboxes.push(energyInbox);
-
-
-	//this.memory.settings.containerSettings.outboxes = roomOutboxes;
-
+	if (!roomInboxes.includes(energyInbox))	roomInboxes.push(energyInbox);
 
 	this.memory.settings.containerSettings.inboxes = roomInboxes;
 
 	if (this.storage) {
 		for (let i = 0; i < energyOutboxes.length; i++) {
-			const onePair = [energyOutboxes[i], storage, 'energy', 'source to storage  '];
-			if (onePair[0] && onePair[1])
-				logisticalPairs.push(onePair);
-			else
-				console.log('Malformed Pair: ' + onePair);
+			const onePair = [energyOutboxes[i], storage, 'energy', 'local', 'source to storage'];
+			if (onePair[0] && onePair[1]) logisticalPairs.push(onePair);
+			else console.log('Malformed Pair: ' + onePair);
 		}
 
-		const onePairStoU = [storage, energyInbox, 'energy', 'storage to upgrader'];
-		if (onePairStoU[0].length && onePairStoU[1].length)
-			logisticalPairs.push(onePairStoU);
-		else
-			console.log('Malformed Pair: ' + onePairStoU);
+		if (this.memory.outposts) {
+			const remoteContainers = this.memory.outposts.aggContainerList;
+			for (let i = 0; i < remoteContainers.length; i++) { 
+				const remotePair = [remoteContainers[i], storage, 'energy', 'remote', 'source to storage'];
+				if (remotePair[0] && remotePair[1]) logisticalPairs.push(remotePair);
+				else console.log('Malformed Pair: ' + remotePair);
+			}
+		}
+		if (energyInbox.length > 0) {
+			const onePairStoU = [storage, energyInbox, 'energy', 'storage to upgrader'];
+			if (typeof onePairStoU[0] === 'string' && typeof onePairStoU[1] === 'string') logisticalPairs.push(onePairStoU);
+			else console.log('Malformed Pair: ' + onePairStoU);
+		}
 		
 		if (extractorBuilt && mineralOutbox) {
 			console.log('mineralOutbox: ' + mineralOutbox);
 			console.log('storage: ' + storage);
 			const minType = minerals[0].mineralType;
 			const onePair = [mineralOutbox, storage, minType, 'extractor to storage'];
-			//if (onePair[0].length && onePair[1].length)
 			logisticalPairs.push(onePair);
-			//else
-				//console.log('Malformed Pair: ' + onePair);
 		}
 	} else {
 		console.log('RCL below 3');
 		for (let i = 0; i < energyOutboxes.length; i++) {
-			const onePair = [energyOutboxes[i], energyInbox, 'energy', 'source to upgrader '];
-			if (onePair[0] && onePair[1])
-				logisticalPairs.push(onePair);
-			else
-				console.log('Malformed Pair: ' + onePair);
+			const onePair = [energyOutboxes[i], energyInbox, 'energy', 'source to upgrader'];
+			if (onePair[0] && onePair[1]) logisticalPairs.push(onePair);
+			else console.log('Malformed Pair: ' + onePair);
 		}
 	}
 
 	let pairReport = '';
-	if (!this.memory.data)
-		this.memory.data = {};
-	if (!this.memory.data.logisticalPairs)
-		this.memory.data.logisticalPairs = [];
-	if (!this.memory.data.pairCounter)
-		this.memory.data.pairCounter = 0;
+	if (!this.memory.data) this.memory.data = {};
+	if (!this.memory.data.logisticalPairs) this.memory.data.logisticalPairs = [];
+	if (!this.memory.data.pairCounter) this.memory.data.pairCounter = 0;
 	if (logisticalPairs.length > 1) {
 		pairReport = '-----REGISTERED LOGISTICAL PAIRS-----\n';
 		for (let i = 0; i < logisticalPairs.length; i++)
-			pairReport += 'PAIR #' + (i+1) + ': OUTBOX> ' + logisticalPairs[i][0] + ' | INBOX> ' + logisticalPairs[i][1] + ' | TYPE> ' + logisticalPairs[i][3] + ' | CARGO> ' + logisticalPairs[i][2] + '\n';
-	} else
-		pairReport = 'No pairs available to register properly.';
+			pairReport += 'PAIR #' + (i+1) + ': OUTBOX> ' + logisticalPairs[i][0] + ' | INBOX> ' + logisticalPairs[i][1] + ' | CARGO> ' + logisticalPairs[i][2] + ' | LOCALITY> ' + logisticalPairs[i][3] + ' | TYPE> ' + logisticalPairs[i][4] + '\n';
+	} else pairReport = 'No pairs available to register properly.';
 
 	this.memory.data.logisticalPairs = logisticalPairs;
 
-	/*if (this.memory.settings.flags.centralStorageLogic) {
-		this.memory.targets.collector = 2;
-		this.memory.targets.runner = logisticalPairs * 2;
-	} else {
-		let interimValue = 1;
-		if (logisticalPairs.length > 0)
-			interimValue = logisticalPairs
-		
-		this.memory.targets.collector = 2 + (interimValue * 2);
+
+	if (this.memory.data.pairPaths) {
+		delete this.memory.data.pairPaths;
+		this.memory.data.pairPaths = [];
+	}
+	if (!this.memory.data.pairPaths) this.memory.data.pairPaths = [];
+
+	for (let i = 0; i < logisticalPairs.length; i++) {
+
+		const pair = logisticalPairs[i];
+
+		const startPos = Game.getObjectById(pair[0]);
+		const endPos = Game.getObjectById(pair[1]);
+
+		let path = calcPath(startPos.pos, endPos.pos);
+		let pathLen = path[1];
+		let serialPath = Room.serializePath(path[0]);
+		this.memory.data.pairPaths[i] = [serialPath, pathLen];
+		this.memory.data.logisticalPairs[i].push(pathLen);
+
+	}
+	
+	/*if (this.memory.outposts) {
+		if (this.memory.outposts.aggContainerList.length == 0) this.registerOutpostContainers();
+		const remoteContainers = this.memory.outposts.aggContainerList;
+
+		if (remoteContainers.length > 0) {
+			for (let i = 0; i < remoteContainers.length; i++) {
+
+				const startPos = Game.getObjectById(remoteContainers[i]);
+				const endPos = this.storage;
+
+				let output = calcPath(startPos.pos, endPos.pos);
+				let path = output[0];
+				let pathLen = output[1];
+
+				let serialPath = Room.serializePath(path);
+				let groupedPath = [serialPath, pathLen];
+
+				this.memory.data.pairPaths.push(groupedPath)
+				
+			}
+		}
 	}*/
 
+	this.setTarget('runner', this.memory.data.logisticalPairs.length);
 	return pairReport;
 }
 Room.prototype.setRepairRampartsTo 				= function(percentMax) {
@@ -1273,7 +1283,7 @@ Room.prototype.setCraneSpot 							= function(posX, posY) {
 	this.memory.data.craneSpot = [posX, posY];
 	console.log('[' + this.name + ']: Set craneSpot to ' + posX + ', ' + posY + '.');
 }
-Room.prototype.setRemoteTargets = function (roomName, roomPos, waypoints = false, rbCount = 0, rlCount = 0, override = false) {
+Room.prototype.setRemoteTargets 					= function (roomName, roomPos, waypoints = false, rbCount = 0, rlCount = 0, override = false) {
 	if (override && this.memory.data.remoteWorkRoom !== roomName)
 		return 'Current remoteWorkRoom already exists and override flag is not set.'; 
 	if (!validateRoomName(roomName))
