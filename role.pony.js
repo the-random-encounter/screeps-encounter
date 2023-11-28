@@ -20,7 +20,7 @@ const rolePony = {
 				if (cMem.passengerName !== 'none') {
 					
 					const passenger = Game.creeps[passengerName];
-
+					
 					if (cMem.reachedPassenger == false) {
 						if (!pos.isNearTo(passenger)) {
 							creep.moveTo(passenger, { visualizePathStyle: { stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined' } });

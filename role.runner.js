@@ -44,9 +44,8 @@ const roleRunner = {
 									creep.withdraw(target, lootTypes[i]);
 									return;
 								}
-							} else {
+							} else
 								creep.moveTo(target, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
-							}
 						}
 					}
 				} else {
