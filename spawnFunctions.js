@@ -5,11 +5,15 @@ Spawn.prototype.spawnDismantler = function (maxEnergy) {
 	Game.spawns.Spawn1.spawnCreep([MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, WORK], 'RBguy', {memory: {role: 'remotebuilder', roleForQuota: 'remotebuilder', homeRoom: 'W13N34', rallyPoint: 'W13N33', workRoom: 'W13N33'}})
 }
 
-Spawn.prototype.spawnWarrior = function (maxEnergy) {
+Spawn.prototype.spawnWarrior = function (creepName, targetRoom, waypoints = false, maxEnergy = false) {
 	
-	const baseBody = [MOVE, ATTACK];
+	if (!validateRoomName(targetRoom)) return 'Invalid roomname provided.';
+	if (!validateFlagName(waypoints)) return 'Invalid waypoints provided.';
 
+	const baseBody = [MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK];
 
+	const result = this.spawnCreep(baseBody, creepName, { memory: { role: 'warrior', roleForQuota: 'warrior', homeRoom: this.room.name, attackRoom: targetRoom, rallyPoint: waypoints } });
+	return this.room.link() + 'Spawning warrior (target: ' + targetRoom + ')... RESULT CODE: ' + result;
 }
 
 Spawn.prototype.spawnHarvester = function (targetRoom, name) {

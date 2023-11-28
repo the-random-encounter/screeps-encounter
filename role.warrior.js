@@ -100,10 +100,10 @@ const roleWarrior = {
 			} else { // I HAVE A RALLY POINT, LET'S BOOGY!
         if (cMem.rallyPoint instanceof Array) {
           if (cMem.rallyPoint.length == 1 && pos.isNearTo(Game.flags[cMem.rallyPoint[0]])) cMem.rallyPoint = 'none';
-          else if (!pos.isNearTo(Game.flags[cMem.rallyPoint[0]])) creep.moveTo(Game.flags[cMem.rallyPoint[0]], { visualizePathStyle: { stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined' } });
+          else if (!pos.isNearTo(Game.flags[cMem.rallyPoint[0]])) creep.moveTo(Game.flags[cMem.rallyPoint[0]], { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
           else {
             if (cMem.rallyPoint.length > 1)
-              creep.moveTo(Game.flags[cMem.rallyPoint[1]], { visualizePathStyle: { stroke: '#00ff00', opacity: 0.3, lineStyle: 'undefined' } });
+              creep.moveTo(Game.flags[cMem.rallyPoint[1]], { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
             console.log(creep.name + ': Reached rally point \'' + cMem.rallyPoint[0] + '\'');
             const nextWaypoint = cMem.rallyPoint.shift();            
             if (nextWaypoint === 'undefined') {
@@ -117,7 +117,7 @@ const roleWarrior = {
 							console.log(creep.name + ': Reached rally point \'' + cMem.rallyPoint + '\'');
 							cMem.rallyPoint = 'none';
 						}
-						else creep.moveTo(rally, { visualizePathStyle: { stroke: '#00ffff', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+						else creep.moveTo(rally, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
 					}
 			}
 		}	else {

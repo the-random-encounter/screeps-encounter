@@ -22,16 +22,20 @@ const roleCollector = {
 				if (creep.ticksToLive <= 2) creep.say('☠️');
 
 				if (cMem.invaderLooter && room.storage) { // THERE ARE INVADERS TO LOOT AND STORAGE TO PUT IT IN!
-					const tombstones = room.find(FIND_TOMBSTONES, { filter: { creep: { my: false } } });
-					const target = pos.findClosestByRange(tombstones);
-					if (target) {
-						if (target.store.getUsedCapacity() == 0) {
+					const tombstones = room.find(FIND_TOMBSTONES, { filter: (i) => i.store.getUsedCapacity() > 0 && !i.creep.my });
+					if (tombstones.length > 0) {
+						const target = pos.findClosestByRange(tombstones);
+						const lootTypes = Object.keys(creep.store);
+						if (target.store.getUsedCapacity() == 0 && (lootTypes.length <= 1 && lootTypes[0] == 'energy')) {
 							if (cMem.xferGoods !== undefined) delete cMem.xferGoods;
 							delete cMem.invaderLooter;
 						}
+					} else {
+						delete cMem.xferGoods;
+						delete cMem.invaderLooter;
 					}
 
-					if (cMem.xferGoods === true && creep.store.getUsedCapacity() > 0) {
+					if (cMem.xferGoods === true && creep.store.getFreeCapacity() > 0) {
 						if (!pos.isNearTo(room.storage))
 							creep.moveTo(room.storage, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
 						else {
@@ -41,43 +45,45 @@ const roleCollector = {
 							if (creep.store.getUsedCapacity() == 0) delete cMem.xferGoods;
 						}
 					} else {
-
+						/*
 						if (target) { // I FOUND THE CLOSEST ENEMY TOMBSTONE
 							const lootTypes = Object.keys(target.store);
 							console.log(lootTypes);
 
 							if (lootTypes.length == 1 && lootTypes[0] == 'energy' && target.store[RESOURCE_ENERGY] < 25) cMem.invaderLooter = false;
 							
-							else { // THERE'S WORTHWHILE LOOT
-								if (creep.store.getFreeCapacity() !== 0) { // AND I HAVE FREE SPACE
+							else {*/ // THERE'S WORTHWHILE LOOT
+						if (creep.store.getFreeCapacity() !== 0) { // AND I HAVE FREE SPACE
+							const tombstones = room.find(FIND_TOMBSTONES, { filter: (i) => i.store.getUsedCapacity() > 0 && !i.creep.my });
+							if (tombstones.length > 0) {
+								const target = pos.findClosestByRange(tombstones);
 
-									if (pos.isNearTo(target)) {
-										creep.withdraw(target, lootTypes[lootTypes.length - 1]);
-										cMem.xferGoods = true;
-									}
-									else creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
-									
-								} else { // I NEED TO UNLOAD MY INVENTORY
+								if (pos.isNearTo(target)) {
+									creep.withdraw(target, lootTypes[lootTypes.length - 1]);
+								
+								}
+								else creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
+							
+							} else { // I NEED TO UNLOAD MY INVENTORY
 
-									const storage = room.storage || pos.findClosestByRange(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE } });
+								const storage = room.storage || pos.findClosestByRange(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_STORAGE } });
 
-									if (pos.isNearTo(storage)) { // SINCE I'M BY STORAGE,
+								if (pos.isNearTo(storage)) { // SINCE I'M BY STORAGE,
 
-										const creepLootTypes = Object.keys(creep.store);
-										creep.transfer(storage, creepLootTypes[creepLootTypes.length - 1]);
-										cMem.xferGoods = false;
-
-									}
-
-									else creep.moveTo(storage, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
+									const creepLootTypes = Object.keys(creep.store);
+									creep.transfer(storage, creepLootTypes[creepLootTypes.length - 1]);
+									cMem.xferGoods = false;
 
 								}
 
-								const creepGonnaDie = creep.ticksToLive;
-								const tombsWithStuff = room.find(FIND_TOMBSTONES, { filter: (i) => i.store.getUsedCapacity() > 0 }).length;
-														
-								if (tombsWithStuff.length == 0 || creepGonnaDie < 100) delete cMem.invaderLooter;					
+								else creep.moveTo(storage, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined', ignoreCreeps: true } });
+
 							}
+
+							const creepGonnaDie = creep.ticksToLive;
+							const tombsWithStuff = room.find(FIND_TOMBSTONES, { filter: (i) => i.store.getUsedCapacity() > 0 }).length;
+												
+							if (tombsWithStuff.length == 0 || creepGonnaDie < 100) delete cMem.invaderLooter;
 						}
 					}
 				} else { // NO INVADERS TO LOOT, SO...

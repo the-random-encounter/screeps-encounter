@@ -435,6 +435,9 @@ Room.prototype.initFlags 									= function() {
 	if (this.memory.settings.flags.sortConSites === undefined)
 		this.memory.settings.flags.sortConSites = false;
 
+	if (this.memory.settings.flags.closestConSites === undefined)
+		this.memory.settings.flags.closestConSites = false;
+
 	console.log(this.link() + ': Room flags initialized: craneUpgrades(' + this.memory.settings.flags.craneUpgrades + ') centralStorageLogic(' + this.memory.settings.flags.centralStorageLogic + ') repairRamparts(' + this.memory.settings.flags.repairRamparts + ') repairWalls(' + this.memory.settings.flags.repairWalls + ') runnersDoMinerals(' + this.memory.settings.flags.runnersDoMinerals + ') towerRepairBasic(' + this.memory.settings.flags.towerRepairBasic + ') towerRepairDefenses(' + this.memory.settings.flags.towerRepairDefenses + ') runnersDoPiles(' + this.memory.settings.flags.runnersDoPiles + ') harvestersFixAdjacent(' + this.memory.settings.flags.harvestersFixAdjacent + ') repairBasics(' + this.memory.settings.flags.repairBasics + ') upgradersSeekEnergy(' + this.memory.settings.flags.upgradersSeekEnergy + ')');
 	return;
 }
@@ -507,6 +510,18 @@ Room.prototype.initSettings 							= function() {
 	if (!this.memory.settings.visualSettings.roomFlags.displayCoords)				this.memory.settings.visualSettings.roomFlags.displayCoords = [0, 49];
 	if (!this.memory.settings.visualSettings.roomFlags.color)								this.memory.settings.visualSettings.roomFlags.color = '#ff0033';
 	if (!this.memory.settings.visualSettings.roomFlags.fontSize) 						this.memory.settings.visualSettings.roomFlags.fontSize = 0.4;
+	if (!this.memory.settings.visualSettings.progressInfo)
+		this.memory.settings.visualSettings.progressInfo = {};
+	if (!this.memory.settings.visualSettings.progressInfo.alignment)
+		this.memory.settings.visualSettings.progressInfo.alignment = 'left';
+	if (!this.memory.settings.visualSettings.progressInfo.xOffset)
+		this.memory.settings.visualSettings.progressInfo.xOffset = 1;
+	if (!this.memory.settings.visualSettings.progressInfo.yOffsetFactor)
+		this.memory.settings.visualSettings.progressInfo.yOffsetFactor = 0.6;
+	if (!this.memory.settings.visualSettings.progressInfo.stroke)
+		this.memory.settings.visualSettings.progressInfo.stroke = '#000000';
+	if (!this.memory.settings.visualSettings.progressInfo.fontSize)
+		this.memory.settings.visualSettings.progressInfo.fontSize = 0.6;
 	if (!this.memory.settings.labSettings.reagentOne)												this.memory.settings.labSettings.reagentOne = 'none';
 	if (!this.memory.settings.labSettings.reagentTwo)												this.memory.settings.labSettings.reagentTwo = 'none';
 	if (!this.memory.settings.containerSettings.inboxes) 										this.memory.settings.containerSettings.inboxes = [];
@@ -526,13 +541,17 @@ Room.prototype.registerLogisticalPairs 		= function() {
 	let minerals = this.find(FIND_MINERALS);
 	let mineralOutbox;
 	let extractorBuilt = false;
+	let extractor;
 	let linkDrops = this.find(FIND_STRUCTURES, { filter: (i) => i.structureType == STRUCTURE_LINK && ((i.pos.x <= 4 || i.pos.x >= 45) || (i.pos.y <= 4 || i.pos.y >= 45)) });
 
-	if (this.memory.objects.extractor !== undefined) extractorBuilt = true;
+	if (this.memory.objects.extractor !== undefined) {
+		extractorBuilt = true;
+		extractor = Game.getObjectById(this.memory.objects.extractor[0]);
+	}
 
 	if (minerals) {
-		mineralOutbox = minerals[0].pos.findClosestByRange(FIND_STRUCTURES, 5, { filter: { structureType: STRUCTURE_CONTAINER } });
-		if (mineralOutbox) mineralOutbox = mineralOutbox.id;
+		mineralOutboxArray = minerals[0].pos.findInRange(FIND_STRUCTURES, 3, { filter: { structureType: STRUCTURE_CONTAINER } });
+		if (mineralOutboxArray.length > 0) mineralOutbox = mineralOutboxArray[0].id;
 	}
 	
 	let energyInbox = this.controller.pos.findInRange(FIND_STRUCTURES, 5, { filter: { structureType: STRUCTURE_CONTAINER } });
@@ -565,7 +584,7 @@ Room.prototype.registerLogisticalPairs 		= function() {
 
 	if (this.storage) {
 		for (let i = 0; i < energyOutboxes.length; i++) {
-			const onePair = [energyOutboxes[i], storage, 'energy', 'local', 'source to storage'];
+			const onePair = [energyOutboxes[i], storage, 'energy', 'local ', 'source to storage'];
 			if (onePair[0] && onePair[1]) logisticalPairs.push(onePair);
 			else console.log('Malformed Pair: ' + onePair);
 		}
@@ -587,21 +606,21 @@ Room.prototype.registerLogisticalPairs 		= function() {
 			}
 		}
 		if (energyInbox.length > 0) {
-			const onePairStoU = [storage, energyInbox, 'energy', 'storage to upgrader'];
+			const onePairStoU = [storage, energyInbox, 'energy', 'local ', 'storage to upgrader'];
 			if (typeof onePairStoU[0] === 'string' && typeof onePairStoU[1] === 'string') logisticalPairs.push(onePairStoU);
 			else console.log('Malformed Pair: ' + onePairStoU);
 		}
 		
-		if (extractorBuilt && mineralOutbox) {
+		if (extractorBuilt && typeof mineralOutbox === 'string') {
 			console.log('mineralOutbox: ' + mineralOutbox);
 			console.log('storage: ' + storage);
 			const minType = minerals[0].mineralType;
-			const onePair = [mineralOutbox, storage, minType, 'local', 'extractor to storage'];
+			const onePair = [mineralOutbox, storage, minType, 'local ', 'extractor to storage'];
 			logisticalPairs.push(onePair);
 		}
 	} else {
 		for (let i = 0; i < energyOutboxes.length; i++) {
-			const onePair = [energyOutboxes[i], energyInbox, 'energy', 'local', 'source to upgrader'];
+			const onePair = [energyOutboxes[i], energyInbox, 'energy', 'local ', 'source to upgrader'];
 			if (onePair[0] && onePair[1]) logisticalPairs.push(onePair);
 			else console.log('Malformed Pair: ' + onePair);
 		}
@@ -612,7 +631,7 @@ Room.prototype.registerLogisticalPairs 		= function() {
 	if (!this.memory.data.logisticalPairs) this.memory.data.logisticalPairs = [];
 	if (!this.memory.data.pairCounter) this.memory.data.pairCounter = 0;
 	if (logisticalPairs.length > 1) {
-		pairReport = '------------------------------------------------------ REGISTERED LOGISTICAL PAIRS ------------------------------------------------------\n';
+		pairReport = '------------------------------------------------- ' + this.link() + ': REGISTERED LOGISTICAL PAIRS --------------------------------------------------\n';
 		for (let i = 0; i < logisticalPairs.length; i++)
 			pairReport += ' PAIR #' + (i+1) + ': OUTBOX> ' + logisticalPairs[i][0] + ' | INBOX> ' + logisticalPairs[i][1] + ' | CARGO> ' + logisticalPairs[i][2] + ' | LOCALITY> ' + logisticalPairs[i][3] + ' | TYPE> ' + logisticalPairs[i][4] + '\n';
 	} else pairReport = 'No pairs available to register properly.';

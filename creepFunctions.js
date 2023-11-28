@@ -174,16 +174,10 @@ Creep.prototype.unloadEnergy = function() {
 }
 
 Creep.prototype.harvestEnergy = function() {
-	let storedSource = Game.getObjectById(this.memory.source);
-	if (!storedSource) {
-		delete this.memory.source;
-		//if (this.memory.role == 'harvester' || this.memory.role == 'rebooter' || this.memory.role == 'miner')
-		storedSource = this.assignHarvestSource(false);
-		//else if (this.memory.role == 'remoteharvester') {
-		//	console.log('calling assignRemoteHarvestSource');
-		//	storedSource = this.assignRemoteHarvestSource(false);
-		//}
-	}
+	
+	if (!this.memory.source) this.assignHarvestSource();
+
+	const storedSource = Game.getObjectById(this.memory.source);
 	
 	if (storedSource) {
 		if (this.pos.isNearTo(storedSource)) {
@@ -191,14 +185,9 @@ Creep.prototype.harvestEnergy = function() {
 				if (this.store.getUsedCapacity() > 0) {
 					this.unloadEnergy();
 					this.harvest(storedSource);
-				} else {
-					this.say('🚬');
-				}
-			} else {
-				this.harvest(storedSource);
-			}
-		} else
-			this.moveTo(storedSource, { visualizePathStyle: { stroke: '#ffaa00', ignoreCreeps: true } });
+				} else this.say('🚬');
+			} else this.harvest(storedSource);
+		} else this.moveTo(storedSource, { visualizePathStyle: { stroke: '#ffaa00', ignoreCreeps: true } });
 	}
 }
 

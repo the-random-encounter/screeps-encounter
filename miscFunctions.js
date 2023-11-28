@@ -227,12 +227,17 @@ global.visualRCProgress = function (controllerID) {
 	let hours = Math.floor(secondsRemaining % (3600 * 24) / 3600);
 	let minutes = Math.floor(secondsRemaining % 3600 / 60);
 	let seconds = Math.floor(secondsRemaining % 60);
-	
-	cont.room.visual.text(('L' + cont.level + ' - ' + ((cont.progress / cont.progressTotal) * 100).toFixed(2)) + '%', cont.pos.x + 1, cont.pos.y - 1.2, { align: 'left', opacity: 0.8, color: lvlColor, font: 0.6, stroke: '#000000' });
+	const alignment = cont.room.memory.settings.visualSettings.progressInfo.alignemnt;
+	const fontSize = cont.room.memory.settings.visualSettings.progressInfo.fontSize;
+	const stroke = cont.room.memory.settings.visualSettings.progressInfo.stroke;
+	const xOffset = cont.room.memory.settings.visualSettings.progressInfo.xOffset;
+	const yOffsetFactor = cont.room.memory.settings.visualSettings.progressInfo.yOffsetFactor;
 
-	cont.room.visual.text((cont.progress + '/' + cont.progressTotal) + ' - Avg: +' + avgProgressPerTick, cont.pos.x + 1, cont.pos.y - 0.6, { align: 'left', opacity: 0.8, color: lvlColor, font: 0.5, stroke: '#000000' });
+	cont.room.visual.text(('L' + cont.level + ' - ' + ((cont.progress / cont.progressTotal) * 100).toFixed(2)) + '%', cont.pos.x + xOffset, cont.pos.y - (yOffsetFactor * 2), { align: alignment, opacity: 0.8, color: lvlColor, font: fontSize, stroke: stroke });
 
-	cont.room.visual.text(days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's (' + ticksRemaining + ' ticks)', cont.pos.x + 1, cont.pos.y, { align: 'left', opacity: 0.8, color: lvlColor, font: 0.5, stroke: '#000000' });
+	cont.room.visual.text((cont.progress + '/' + cont.progressTotal) + ' - Avg: +' + avgProgressPerTick, cont.pos.x + xOffset, cont.pos.y - yOffsetFactor, { align: alignment, opacity: 0.8, color: lvlColor, font: fontSize-.1, stroke: stroke });
+
+	cont.room.visual.text(days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's (' + ticksRemaining + ' ticks)', cont.pos.x + xOffset, cont.pos.y, { align: alignment, opacity: 0.8, color: lvlColor, font: fontSize-.1, stroke: stroke });
 }
 
 global.secondsToDhms = function(seconds) {

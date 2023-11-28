@@ -431,7 +431,12 @@ module.exports.loop = function () {
 			// Select a non-geriatric collector to loot compounds or energy from enemy corpses
 			let invaderLooterAnnounced = false;
 			if (invaderLooterAnnounced == false) {
-				if (room.find(FIND_HOSTILE_CREEPS).length) {
+				const hostiles = room.find(FIND_HOSTILE_CREEPS);
+				if (hostiles.length > 0) {
+					const hostileOwner = hostiles[0].owner.username;
+					const creepName = hostiles[0].name;
+					console.log(hostileOwner + ': -----------------HOSTILE CREEPS PRESENT----------------- ' + creepName);
+					room.visual.rect(0, 0, 50, 50, { fill: '#440000', stroke: '#ff0000', opacity: 0.5, strokeWidth: 0.2 });
 					if (collectors.length) {
 						for (let i = 0; i < collectors.length; i++) {
 							if (collectors[i].ticksToLive > 300) {
@@ -447,8 +452,27 @@ module.exports.loop = function () {
 			
 			// CONSOLE SPAWN INFO
 			const tickInterval = Memory.globalSettings.consoleSpawnInterval;
+
+			const energy = ' NRG: ' + room.energyAvailable + '/' + room.energyCapacityAvailable + '(' + (room.energyAvailable / room.energyCapacityAvailable * 100).toFixed(0) + '%) ';
+			const hInfo = (harvesterTarget) ? '| H:' + harvesters.length + '(' + harvesterTarget + ') ' : '';
+			const cInfo = (collectorTarget) ? '| C:' + collectors.length + '(' + collectorTarget + ') ' : '';
+			const uInfo = (upgraderTarget) ? '| U:' + upgraders.length + '(' + upgraderTarget + ') ' : '';
+			const bInfo = (builderTarget) ? '| B:' + builders.length + '(' + builderTarget + ') ' : '';
+			const rInfo = (runnerTarget) ? '| Rn:' + runners.length + '(' + runnerTarget + ') ' : '';
+			const rpInfo = (repairerTarget) ? '| Rp:' + repairers.length + '(' + repairerTarget + ') ' : '';
+			const cnInfo = (craneTarget) ? '| Cn:' + cranes.length + '(' + craneTarget + ') ' : '';
+			const rtInfo = (rebooterTarget) ? '| Rb:' + rebooters.length + '(' + rebooterTarget + ') ' : '';
+			const rvInfo = (reserverTarget) ? '| Rv:' + reservers.length + '(' + reserverTarget + ') ' : '';
+			const rngInfo = (rangerTarget) ? '| Rng:' + rangers.length + '(' + rangerTarget + ') ' : '';
+			const warInfo = (warriorTarget) ? '| War:' + warriors.length + '(' + warriorTarget + ') ' : '';
+			const hlrInfo = (healerTarget) ? '| Hlr:' + healers.length + '(' + healerTarget + ') ' : '';
+			const rhInfo = (remoteHarvesterTarget) ? '| RH:' + remoteHarvesters.length + '(' + remoteHarvesterTarget + ') ' : '';
+			const rrInfo = (remoteRunnerTarget) ? '| RR:' + remoteRunners.length + '(' + remoteRunnerTarget + ') ' : '';
+			const rbInfo = (remoteBuilderTarget) ? '| RB:' + remoteBuilders.length + '(' + remoteBuilderTarget + ') ' : '';
+			const rgInfo = (remoteGuardTarget) ? '| RG:' + remoteGuards.length + '(' + remoteGuardTarget + ')' : '';
+			
 			if (tickInterval !== 0 && tickCount % tickInterval) {
-				console.log('H:' + harvesters.length + '(' + harvesterTarget + ') | C:' + collectors.length + '(' + collectorTarget + ') | U:' + upgraders.length + '(' + upgraderTarget + ')| B:' + builders.length + '(' + builderTarget + ') | Rn:' + runners.length + '(' + runnerTarget + ') | Rp:' + repairers.length + '(' + repairerTarget + ') | Cn:' + cranes.length + '(' + craneTarget + ') | Rb:' + rebooters.length + '(' + rebooterTarget + ') | Rv:' + reservers.length + '(' + reserverTarget + ') || Rng:' + rangers.length + '(' + rangerTarget + ') | War:' + warriors.length + '(' + warriorTarget + ') | Hlr:' + healers.length + '(' + healerTarget + ') || RH:' + remoteHarvesters.length + '(' + remoteHarvesterTarget + ') | RR:' + remoteRunners.length + '(' + remoteRunnerTarget + ') | RB:' + remoteBuilders.length + '(' + remoteBuilderTarget + ') | RG:' + remoteGuards.length + '(' + remoteGuardTarget + ') || Energy: ' + room.energyAvailable + '(' + room.energyCapacityAvailable + ')');
+				console.log(room.link() + energy + hInfo + cInfo + uInfo + bInfo + rInfo + rpInfo + cnInfo + rtInfo + rvInfo + rngInfo + warInfo + hlrInfo + rhInfo + rrInfo + rbInfo + rgInfo);
 			}
 
 			// ROOM VISUAL - SPAWN INFO
@@ -537,8 +561,8 @@ module.exports.loop = function () {
 				availableVariants.repairer 		= spawnVariants.repairer300;
 				availableVariants.runner 			= spawnVariants.runner300;
 				availableVariants.crane 			= spawnVariants.crane300;
-			} else if (room.energyCapacityAvailable <= 800) {
-				availableVariants.harvester 	= spawnVariants.harvester500;
+			} else if (room.energyCapacityAvailable <= 600) {
+				availableVariants.harvester 	= spawnVariants.harvester600;
 				availableVariants.collector 	= spawnVariants.collector500;
 				availableVariants.upgrader 	= spawnVariants.upgrader550;
 				availableVariants.builder 	= spawnVariants.builder500;
@@ -663,7 +687,7 @@ module.exports.loop = function () {
 			// ################################################## SPAWN MANAGEMENT SYSTEM ##################################################
 			// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			const colonyNum = parseInt((Memory.colonies.colonyList.indexOf(room.name))) + 1;
-			const colonyName = 'Col_' + colonyNum;
+			const colonyName = 'Col' + colonyNum;
 			let readySpawn = spawn;
 			if (room.memory.objects.spawns && room.memory.objects.spawns.length > 0) {
 				for (let i = 0; i < room.memory.objects.spawns.length; i++) {
@@ -675,10 +699,10 @@ module.exports.loop = function () {
 			}
 			if (room.memory.objects.spawns.length > 0) {
 				if (Game.creeps.length == 0 && room.energyAvailable <= 300 && (!room.memory.objects.storage || room.storage.store[RESOURCE_ENERGY] < 500)) {
-					newName = colonyName + '-Rb' + rebooterCount;
+					newName = colonyName + '_Rb' + rebooterCount;
 					while (readySpawn.spawnCreep([WORK, WORK, MOVE, CARRY], newName, { memory: { role: 'rebooter', roleForQuota: 'rebooter' } }) == ERR_NAME_EXISTS) {
 						rebooterCount++;
-						newName = colonyName + '-Rb' + rebooterCount;
+						newName = colonyName + '_Rb' + rebooterCount;
 					}
 				} else if (Game.creeps.length <= 1 && room.energyAvailable <= 300 && room.storage.store[RESOURCE_ENERGY] >= 500) {
 					const result = readySpawn.spawnCreep([CARRY, MOVE], 'Collie the Emergency Collector Creep', { memory: { role: 'collector', homeRoom: roomName } });
@@ -695,130 +719,130 @@ module.exports.loop = function () {
 					}
 				} else {
 					if ((harvesters.length < harvesterTarget) || (harvesters.length <= harvesterTarget && harvesterDying && harvesterTarget !== 0)) {
-						newName = colonyName + '-H' + harvesterCount;
+						newName = colonyName + '_H' + harvesterCount;
 						const result = readySpawn.spawnCreep(availableVariants.harvester, newName, { memory: { role: 'harvester', roleForQuota: 'harvester', homeRoom: roomName } })
 						while (readySpawn.spawnCreep(availableVariants.harvester, newName, { memory: { role: 'harvester', roleForQuota: 'harvester', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 							harvesterCount++;
-							newName = colonyName + '-H' + harvesterCount;
+							newName = colonyName + '_H' + harvesterCount;
 						}
 					} else if ((collectors.length < collectorTarget) || (collectors.length <= collectorTarget && collectorDying && collectorTarget !== 0)) {
-						newName = colonyName + '-C' + collectorCount;
+						newName = colonyName + '_C' + collectorCount;
 						while (readySpawn.spawnCreep(availableVariants.collector, newName, { memory: { role: 'collector', roleForQuota: 'collector', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 							collectorCount++;
-							newName = colonyName + '-C' + collectorCount;
+							newName = colonyName + '_C' + collectorCount;
 						}
 					} else {
 						// REBOOTERS/COLLECTORS/HARVESTERS are at quota, move on to the rest:
 						if ((runners.length < runnerTarget) || (runners.length <= runnerTarget && runnerDying && runnerTarget !== 0)) {
-							newName = colonyName + '-Rn' + runnerCount;
+							newName = colonyName + '_Rn' + runnerCount;
 							if (room.controller.level >= 4 && room.storage) {
 								while (readySpawn.spawnCreep(readySpawn.determineBodyparts('runner', room.energyCapacityAvailable), newName, { memory: { role: 'runner', roleForQuota: 'runner', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 									runnerCount++;
-									newName = colonyName + '-Rn' + runnerCount;
+									newName = colonyName + '_Rn' + runnerCount;
 								}
 							} else {
 								while (readySpawn.spawnCreep(availableVariants.runner, newName, { memory: { role: 'runner', roleForQuota: 'runner', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 									runnerCount++;
-									newName = colonyName + '-Rn' + runnerCount;
+									newName = colonyName + '_Rn' + runnerCount;
 								}
 							}
 						} else if (upgraders.length < upgraderTarget) {
-							newName = colonyName + '-U' + upgraderCount;
+							newName = colonyName + '_U' + upgraderCount;
 							while (readySpawn.spawnCreep(availableVariants.upgrader, newName, { memory: { role: 'upgrader', roleForQuota: 'upgrader', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								upgraderCount++;
-								newName = colonyName + '-U' + upgraderCount;
+								newName = colonyName + '_U' + upgraderCount;
 							}
 						} else if (sites.length > 0 && builders.length < builderTarget) {
-							newName = colonyName + '-B' + builderCount;
+							newName = colonyName + '_B' + builderCount;
 							while (readySpawn.spawnCreep(availableVariants.builder/*[WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE]*/, newName, { memory: { role: 'builder', roleForQuota: 'builder', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								builderCount++;
-								newName = colonyName + '-B' + builderCount;
+								newName = colonyName + '_B' + builderCount;
 							}
 						} else if (repairers.length < repairerTarget) {
-							newName = colonyName + '-Rp' + repairerCount;
+							newName = colonyName + '_Rp' + repairerCount;
 							while (readySpawn.spawnCreep(availableVariants.repairer, newName, { memory: { role: 'repairer', roleForQuota: 'repairer', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								repairerCount++;
-								newName = colonyName + '-Rp' + repairerCount
+								newName = colonyName + '_Rp' + repairerCount
 							}
 						} else if (cranes.length < craneTarget) {
-							newName = colonyName + '-Cn' + craneCount;
+							newName = colonyName + '_Cn' + craneCount;
 							while (readySpawn.spawnCreep(availableVariants.crane, newName, { memory: { role: 'crane', roleForQuota: 'crane', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								craneCount++;
-								newName = colonyName + '-Cn' + craneCount;
+								newName = colonyName + '_Cn' + craneCount;
 							}
 						} else if (miners.length < minerTarget && room.memory.objects.extractor) {
-							newName = colonyName + '-M' + minerCount;
+							newName = colonyName + '_M' + minerCount;
 							while (readySpawn.spawnCreep([WORK, WORK, WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE], newName, { memory: { role: 'miner', roleForQuota: 'miner', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								minerCount++;
-								newName = colonyName + '-M' + minerCount;
+								newName = colonyName + '_M' + minerCount;
 							}
 						} else if ((scientists.length < scientistTarget && room.objects.labs) /*&& room.memory.settings.flags.doScience*/) {
-							newName = colonyName + '-S' + scientistCount;
+							newName = colonyName + '_S' + scientistCount;
 							while (readySpawn.spawnCreep([MOVE, MOVE, MOVE, CARRY, CARRY, CARRY, CARRY, CARRY], newName, { memory: { role: 'scientist', roleForQuota: 'scientist', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								scientistCount++;
-								newName = colonyName + '-S' + scientistCount;
+								newName = colonyName + '_S' + scientistCount;
 							}
 						} else if ((reservers.length < reserverTarget) || (reservers.length <= reserverTarget && reserverDying && reserverTarget !== 0)) {
-							newName = colonyName + '-Rv' + reserverCount;
+							newName = colonyName + '_Rv' + reserverCount;
 							while (readySpawn.spawnCreep([MOVE, MOVE, CLAIM, CLAIM], newName, { memory: { role: 'reserver', roleForQuota: 'reserver', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								reserverCount++;
-								newName = colonyName + '-Rv' + reserverCount;
+								newName = colonyName + '_Rv' + reserverCount;
 							}
 						} else if ((remoteHarvesters.length < remoteHarvesterTarget) || (remoteHarvesters.length <= remoteHarvesterTarget && remoteHarvesterDying && remoteHarvesterTarget !== 0)) {
-							newName = colonyName + '-RH' + remoteHarvesterCount;
+							newName = colonyName + '_RH' + remoteHarvesterCount;
 							while (readySpawn.spawnCreep([CARRY, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK], newName, { memory: { role: 'remoteharvester', roleForQuota: 'remoteharvester', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								remoteHarvesterCount++;
-								newName = colonyName + '-RH' + remoteHarvesterCount;
+								newName = colonyName + '_RH' + remoteHarvesterCount;
 							}
 						} else if (remoteRunners.length < remoteRunnerTarget) {
-							newName = colonyName + '-RR' + remoteRunnerCount;
+							newName = colonyName + '_RR' + remoteRunnerCount;
 							while (readySpawn.spawnCreep([CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, WORK], newName, { memory: { role: 'remoterunner', roleForQuota: 'remoterunner', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								remoteRunnerCount++;
-								newName = colonyName + '-RR' + remoteRunnerCount;
+								newName = colonyName + '_RR' + remoteRunnerCount;
 							}
 						} else if (/*sites.length > 0 && */remoteBuilders.length < remoteBuilderTarget) {
-							newName = colonyName + '-RB' + remoteBuilderCount;
+							newName = colonyName + '_RB' + remoteBuilderCount;
 							while (readySpawn.spawnCreep([WORK, WORK, WORK, WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE], newName, { memory: { role: 'remotebuilder', roleForQuota: 'remotebuilder', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								remoteBuilderCount++;
-								newName = colonyName + '-RB' + remoteBuilderCount;
+								newName = colonyName + '_RB' + remoteBuilderCount;
 							}
 						} else if ((remoteGuards.length < remoteGuardTarget) || (remoteGuards.length <= remoteGuardTarget && remoteGuardDying && remoteGuardTarget !== 0)) {
-							newName = colonyName + '-RG' + remoteGuardCount;
+							newName = colonyName + '_RG' + remoteGuardCount;
 							while (readySpawn.spawnCreep(availableVariants.remoteGuard, newName, { memory: { role: 'remoteguard', roleForQuota: 'remoteguard', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								remoteGuardCount++;
-								newName = colonyName + '-RG' + remoteGuardCount;
+								newName = colonyName + '_RG' + remoteGuardCount;
 							}
 						} else if (remoteLogisticians.length < remoteLogisticianTarget) {
-							newName = colonyName + '-RL' + remoteLogisticianCount;
+							newName = colonyName + '_RL' + remoteLogisticianCount;
 							while (readySpawn.spawnCreep(availableVariants.remoteLogistician, newName, { memory: { role: 'remotelogistician', roleForQuota: 'remotelogistician', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								remoteLogisticianCount++;
-								newName = colonyName + '-RL' + remoteLogisticianCount;
+								newName = colonyName + '_RL' + remoteLogisticianCount;
 							}
 						} else {
 							//RESERVERS/REMOTE RUNNERS/HARVESTERS/BUILDERS/GUARDS are at quota, move on to defensive creeps:
 							if (rangers.length < rangerTarget) {
-								newName = colonyName + '-Rng' + rangerCount;
+								newName = colonyName + '_Rng' + rangerCount;
 								while (readySpawn.spawnCreep([TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, RANGED_ATTACK, RANGED_ATTACK, MOVE, MOVE], newName, { memory: { role: 'ranger', roleForQuota: 'ranger', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 									rangerCount++;
-									newName = colonyName + '-Rng' + rangerCount;
+									newName = colonyName + '_Rng' + rangerCount;
 								}
 							} else if (warriors.length < warriorTarget) {
-								newName = colonyName + '-War' + warriorCount;
+								newName = colonyName + '_War' + warriorCount;
 								while (readySpawn.spawnCreep(availableVariants.warrior, newName, { memory: { role: 'warrior', roleForQuota: 'warrior', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 									warriorCount++;
-									newName = colonyName + '-War' + warriorCount;
+									newName = colonyName + '_War' + warriorCount;
 								}
 							} else if (healers.length < healerTarget) {
-								newName = colonyName + '-Hlr' + healerCount;
+								newName = colonyName + '_Hlr' + healerCount;
 								while (readySpawn.spawnCreep(availableVariants.healer, newName, { memory: { role: 'healer', roleForQuota: 'healer', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 									healerCount++;
-									newName = colonyName + '-Hlr' + healerCount;
+									newName = colonyName + '_Hlr' + healerCount;
 								}
 							} else if (scouts.length < scoutTarget) {
-								newName = colonyName + '-Sct' + scoutCount;
+								newName = colonyName + '_Sct' + scoutCount;
 								while (readySpawn.spawnCreep([MOVE, MOVE, MOVE, MOVE, MOVE], newName, { memory: { role: 'scout', roleForQuota: 'scout', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 									scoutCount++;
-									newName = colonyName + '-Sct' + scoutCount;
+									newName = colonyName + '_Sct' + scoutCount;
 								}
 							}
 						}
