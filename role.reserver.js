@@ -16,6 +16,7 @@ const roleReserver = {
 			if (HEAP_MEMORY.outpostCounter >= Game.rooms[cMem.homeRoom].memory.outposts.roomList.length) HEAP_MEMORY.outpostCounter = 0;
 		}
 		
+		
 		if (!cMem.disableAI) {
 
 			if (cMem.rallyPoint == 'none') {

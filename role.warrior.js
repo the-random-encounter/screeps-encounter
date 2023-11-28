@@ -28,19 +28,28 @@ const roleWarrior = {
 				else if (pos.y == 49) creep.move(TOP);
 				else if (pos.y == 0) creep.move(BOTTOM);
 
-	
+				if (room.name == cMem.attackRoom) {
+					const hostiles = room.find(FIND_HOSTILE_CREEPS);
+					const target = pos.findClosestByRange(hostiles);
+		
+					if (target) {
+						if (creep.attack(target) == ERR_NOT_IN_RANGE)
+							creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+					} else {
+						const towers = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
+						const target = pos.findClosestByRange(towers);
 
-				
-					if (room.name == cMem.attackRoom) {
-						const hostiles = room.find(FIND_HOSTILE_CREEPS);
-						const target = pos.findClosestByRange(hostiles);
-			
 						if (target) {
-							if (creep.attack(target) == ERR_NOT_IN_RANGE)
-								creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+							if (creep.getActiveBodyparts(WORK) > 0) {
+								if (creep.dismantle(target) == ERR_NOT_IN_RANGE)
+									creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', oapcity: 0.5, lineStyle: 'undefined' } });
+							} else {
+								if (creep.attack(target) == ERR_NOT_IN_RANGE)
+									creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+							}
 						} else {
-							const towers = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
-							const target = pos.findClosestByRange(towers);
+							const spawns = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_SPAWN } });
+							const target = pos.findClosestByRange(spawns);
 
 							if (target) {
 								if (creep.getActiveBodyparts(WORK) > 0) {
@@ -51,9 +60,8 @@ const roleWarrior = {
 										creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
 								}
 							} else {
-								const spawns = room.find(FIND_HOSTILE_STRUCTURES, { filter: { structureType: STRUCTURE_SPAWN } });
-								const target = pos.findClosestByRange(spawns);
-
+								const structures = room.find(FIND_HOSTILE_STRUCTURES);
+								const target = pos.findClosestByRange(structures);
 								if (target) {
 									if (creep.getActiveBodyparts(WORK) > 0) {
 										if (creep.dismantle(target) == ERR_NOT_IN_RANGE)
@@ -62,29 +70,18 @@ const roleWarrior = {
 										if (creep.attack(target) == ERR_NOT_IN_RANGE)
 											creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
 									}
-								} else {
-									const structures = room.find(FIND_HOSTILE_STRUCTURES);
-									const target = pos.findClosestByRange(structures);
-									if (target) {
-										if (creep.getActiveBodyparts(WORK) > 0) {
-											if (creep.dismantle(target) == ERR_NOT_IN_RANGE)
-												creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', oapcity: 0.5, lineStyle: 'undefined' } });
-										} else {
-											if (creep.attack(target) == ERR_NOT_IN_RANGE)
-												creep.moveTo(target, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
-										}
-									} else if (creep.getActiveBodyparts(CLAIM) > 0) {
-										const controller = room.controller;
+								} else if (creep.getActiveBodyparts(CLAIM) > 0) {
+									const controller = room.controller;
 
-										if (creep.attackController(controller) == ERR_NOT_IN_RANGE)
-											creep.moveTo(controller, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
-									}
+									if (creep.attackController(controller) == ERR_NOT_IN_RANGE)
+										creep.moveTo(controller, { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
 								}
 							}
 						}
-					//} else
-						//creep.moveTo(Game.flags[cMem.attackRoom], { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
+					}
 				}
+				else
+					creep.moveTo(Game.flags[cMem.attackRoom], { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
 				//const musterFlag = cMem.squad + '-muster';
 				//if (!pos.isNearTo(Game.flags[musterFlag]))
 					//creep.moveTo(Game.flags[musterFlag], { visualizePathStyle: { stroke: '#ff0000', opacity: 0.5, lineStyle: 'undefined' } });
