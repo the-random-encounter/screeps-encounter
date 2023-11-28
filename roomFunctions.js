@@ -652,11 +652,19 @@ Room.prototype.registerLogisticalPairs 		= function() {
 		const startPos = Game.getObjectById(pair[0]);
 		const endPos = Game.getObjectById(pair[1]);
 
-		let path = calcPath(startPos.pos, endPos.pos, true);
-		let pathLen = path[1];
-		let serialPath = Room.serializePath(path[0]);
-		this.memory.data.pairPaths[i] = [serialPath, pathLen];
-		this.memory.data.logisticalPairs[i].push(pathLen);
+		if (logisticalPairs[i][2] == 'energy') {
+			let path = calcPath(startPos.pos, endPos.pos, true);
+			let pathLen = path[1];
+			let serialPath = Room.serializePath(path[0]);
+			this.memory.data.pairPaths[i] = [serialPath, pathLen];
+			this.memory.data.logisticalPairs[i].push(pathLen);
+		} else {
+			let path = calcPath(startPos.pos, endPos.pos, true);
+			let pathLen = Math.ceil(path[1] / 5);
+			let serialPath = Room.serializePath(path[0]);
+			this.memory.data.pairPaths[i] = [serialPath, pathLen];
+			this.memory.data.logisticalPairs[i].push(pathLen);
+		}
 
 	}
 	
@@ -1218,7 +1226,7 @@ Room.prototype.registerOutpost 						= function(roomName) {
 		sources: Game.rooms[outpostRoomName].memory.objects.sources || null,
 		lastAssigned: 0,
 		direction: outpostDirection,
-		rallyPoint: createRoomFlag(outpostRoomName)
+		rallyPoint: Game.flags(outpostRoomName)
 	}
 	this.memory.outposts.aggregateSourceList = this.memory.outposts.aggregateSourceList.concat(newOutpost.sources);
 	if (Memory.rooms[outpostRoomName].objects.containers !== undefined && Memory.rooms[outpostRoomName].objects.containers.length > 0) {
@@ -1226,7 +1234,7 @@ Room.prototype.registerOutpost 						= function(roomName) {
 		this.memory.outposts.aggLastContainer = 0;
 	}
 	this.memory.outposts.registry[outpostRoomName] = newOutpost;
-	
+	Memory.colonies[homeRoomName].outposts[outpostRoomName] = newOutpost;
 	Memory.rooms[outpostRoomName].outpostOfRoom = this.name;
 
 	currentOutpostList.push(outpostRoomName);

@@ -17,7 +17,8 @@ const roleRepairer				= require('role.repairer'	);
 const roleRunner				= require('role.runner'		);
 const roleCrane					= require('role.crane'		);
 const roleMiner					= require('role.miner'		);
-const roleScientist				= require('role.scientist'	);
+const roleScientist = require('role.scientist');
+const rolePony = require('role.pony');
 
 const roleRanger				= require('role.ranger'		);
 const roleWarrior				= require('role.warrior'	);
@@ -86,7 +87,7 @@ const spawnVariants = {
 	'builder1000':	[ CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK ],
 	'builder1100':	[ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK ],
 	'builder1600':	[ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK ],
-	'repairer300':	[ CARRY, MOVE, WORK, WORK],
+	'repairer300':	[ CARRY, MOVE, WORK, WORK ],
 	'repairer500':	[ CARRY, CARRY, MOVE, MOVE, WORK, WORK, WORK ],
 	'repairer800':	[ CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK ],
 	'repairer1000':	[ CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK ],
@@ -96,13 +97,22 @@ const spawnVariants = {
 	'runner800':	[ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE ],
 	'crane300':	[ CARRY, CARRY, CARRY, CARRY, MOVE, MOVE ],
 	'crane500':	[ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ],
-	'crane800':	[ CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE ],
-	'warrior520': [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK],
-	'warrior1400': [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK],
+	'crane800': [ CARRY, CARRY, CARRY, CARRY, WORK, WORK, WORK, WORK, WORK, MOVE, MOVE ],
+	'miner800': [ CARRY, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK ],
+	'miner1200': [ CARRY, MOVE, MOVE, MOVE, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK, WORK ],
+	'warrior520': [ TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK ],
+	'warrior1400': [ TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK ],
 	'healer1200': [ TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL ],
 	'remoteGuard700':	[ TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK ],
 	'remoteLogistician1200': [ CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE ],
-	'remoteLogistician1500': [ CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE ]
+	'remoteLogistician1500': [ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE ],
+	'pony200': [ MOVE, MOVE, MOVE, MOVE ],
+	'pony300': [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE ],
+	'pony400': [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE ],
+	'pony500': [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE ],
+	'pony600': [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE ],
+	'pony800': [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE ],
+	'pony1000': [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE ]
 }
 
 // define working variant set for use in the main loop, assigned based on current energy capacity limits
@@ -128,6 +138,7 @@ let harvesterCount 	= 1;
 let healerCount = 1;
 let invaderCount = 1;
 let minerCount = 1;
+let ponyCount = 1;
 let providerCount = 1;
 let rangerCount = 1;
 let rebooterCount = 1;
@@ -208,6 +219,9 @@ module.exports.loop = function () {
 					break;
 				case 'miner':
 					minerCount = 1;
+					break;
+				case 'pony':
+					ponyCount = 1;
 					break;
 				case 'provider':
 					providerCount = 1;
@@ -393,7 +407,10 @@ module.exports.loop = function () {
 			let minerTarget 		= _.get(room.memory, ['targets', 'miner'		], 0);
 			let scientistTarget = _.get(room.memory, ['targets', 'scientist'], 0);
 			let scoutTarget 		= _.get(room.memory, ['targets', 'scout'		], 0);
-
+			let claimerTarget 	= _.get(room.memory, ['targets', 'claimer'	], 0);
+			let providerTarget 	= _.get(room.memory, ['targets', 'provider'	], 0);
+			let invaderTarget 	= _.get(room.memory, ['targets', 'invader'	], 0);
+			let ponyTarget 			= _.get(room.memory, ['targets', 'pony'			], 0);
 			
 			let remoteHarvesterTarget;
 			if (room.memory.outposts) remoteHarvesterTarget = room.memory.outposts.aggregateSourceList.length;
@@ -419,6 +436,10 @@ module.exports.loop = function () {
 			let miners 			= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'miner' 		&& creep.memory.homeRoom == roomName);
 			let scientists 	= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'scientist' && creep.memory.homeRoom == roomName);
 			let scouts 			= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'scout' 		&& creep.memory.homeRoom == roomName);
+			let claimers 		= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'claimer' 	&& creep.memory.homeRoom == roomName);
+			let providers 	= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'provider' 	&& creep.memory.homeRoom == roomName);
+			let invaders 		= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'invader' 	&& creep.memory.homeRoom == roomName);
+			let ponies 			= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'pony' 			&& creep.memory.homeRoom == roomName);
 
 			let remoteHarvesters 	= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'remoteharvester' && creep.memory.homeRoom == roomName);
 			let remoteRunners 		= _.filter(Game.creeps, (creep) => creep.memory.roleForQuota == 'remoterunner' 		&& creep.memory.homeRoom == roomName);
@@ -435,7 +456,7 @@ module.exports.loop = function () {
 				if (hostiles.length > 0) {
 					const hostileOwner = hostiles[0].owner.username;
 					const creepName = hostiles[0].name;
-					console.log(hostileOwner + ': -----------------HOSTILE CREEPS PRESENT----------------- ' + creepName);
+					console.log(room.link() + ' ' + hostileOwner + ': -----------------HOSTILE CREEPS PRESENT----------------- ' + creepName);
 					room.visual.rect(0, 0, 50, 50, { fill: '#440000', stroke: '#ff0000', opacity: 0.5, strokeWidth: 0.2 });
 					if (collectors.length) {
 						for (let i = 0; i < collectors.length; i++) {
@@ -544,7 +565,8 @@ module.exports.loop = function () {
 				availableVariants.builder 		= spawnVariants.builder300;
 				availableVariants.repairer 		= spawnVariants.repairer300;
 				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane300;
+				availableVariants.crane = spawnVariants.crane300;
+				availableVariants.pony = spawnVariants.pony200;
 			} else if (room.energyCapacityAvailable <= 400) {
 				availableVariants.harvester 	= spawnVariants.harvester400;
 				availableVariants.collector 	= spawnVariants.collector300;
@@ -552,7 +574,8 @@ module.exports.loop = function () {
 				availableVariants.builder 		= spawnVariants.builder350;
 				availableVariants.repairer 		= spawnVariants.repairer300;
 				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane300;
+				availableVariants.crane = spawnVariants.crane300;
+				availableVariants.pony = spawnVariants.pony300;
 			} else if (room.energyCapacityAvailable <= 500) {
 				availableVariants.harvester 	= spawnVariants.harvester400;
 				availableVariants.collector 	= spawnVariants.collector300;
@@ -560,7 +583,8 @@ module.exports.loop = function () {
 				availableVariants.builder 		= spawnVariants.builder350;
 				availableVariants.repairer 		= spawnVariants.repairer300;
 				availableVariants.runner 			= spawnVariants.runner300;
-				availableVariants.crane 			= spawnVariants.crane300;
+				availableVariants.crane = spawnVariants.crane300;
+				availableVariants.pony = spawnVariants.pony400;
 			} else if (room.energyCapacityAvailable <= 600) {
 				availableVariants.harvester 	= spawnVariants.harvester600;
 				availableVariants.collector 	= spawnVariants.collector500;
@@ -569,7 +593,8 @@ module.exports.loop = function () {
 				availableVariants.repairer 	= spawnVariants.repairer500;
 				availableVariants.runner 	= spawnVariants.runner300;
 				availableVariants.warrior 	= spawnVariants.warrior520;
-				availableVariants.crane 	= spawnVariants.crane500;
+				availableVariants.crane = spawnVariants.crane500;
+				availableVariants.pony = spawnVariants.pony500;
 			} else if (room.energyCapacityAvailable <= 1000) {
 				availableVariants.harvester 	= spawnVariants.harvester600;
 				availableVariants.collector 	= spawnVariants.collector500;
@@ -577,7 +602,9 @@ module.exports.loop = function () {
 				availableVariants.builder 	= spawnVariants.builder800;
 				availableVariants.repairer 	= spawnVariants.repairer800;
 				availableVariants.runner 	= spawnVariants.runner300;
-				availableVariants.crane 	= spawnVariants.crane500;
+				availableVariants.crane = spawnVariants.crane500;
+				availableVariants.miner = spawnVariants.miner800;
+				availableVariants.pony = spawnVariants.pony800;
 				availableVariants.remoteGuard 	= spawnVariants.remoteGuard700;
 			} else if (room.energyCapacityAvailable <= 1300) {
 				availableVariants.harvester 	= spawnVariants.harvester600;
@@ -586,7 +613,9 @@ module.exports.loop = function () {
 				availableVariants.builder 	= spawnVariants.builder1000;
 				availableVariants.repairer 	= spawnVariants.repairer1000;
 				availableVariants.runner 	= spawnVariants.runner300;
-				availableVariants.crane 	= spawnVariants.crane500;
+				availableVariants.crane = spawnVariants.crane500;
+				availableVariants.miner = spawnVariants.miner1200;
+				availableVariants.pony = spawnVariants.pony1000;
 				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
 				availableVariants.remoteLogistician = spawnVariants.remoteLogistician1200;
 			} else if (room.energyCapacityAvailable > 1600) {
@@ -596,7 +625,9 @@ module.exports.loop = function () {
 				availableVariants.builder 	= spawnVariants.builder1100;
 				availableVariants.repairer 	= spawnVariants.repairer1000;
 				availableVariants.runner 	= spawnVariants.runner300;
-				availableVariants.crane 	= spawnVariants.crane500;
+				availableVariants.crane = spawnVariants.crane500;
+				availableVariants.miner = spawnVariants.miner1200;
+				availableVariants.pony = spawnVariants.pony1000;
 				availableVariants.remoteGuard = spawnVariants.remoteGuard700;
 				availableVariants.remoteLogistician = spawnVariants.remoteLogistician1500;
 				availableVariants.warrior = spawnVariants.warrior1400;
@@ -689,15 +720,21 @@ module.exports.loop = function () {
 			const colonyNum = parseInt((Memory.colonies.colonyList.indexOf(room.name))) + 1;
 			const colonyName = 'Col' + colonyNum;
 			let readySpawn = spawn;
-			if (room.memory.objects.spawns && room.memory.objects.spawns.length > 0) {
-				for (let i = 0; i < room.memory.objects.spawns.length; i++) {
-					const thisSpawn = Game.getObjectById(room.memory.objects.spawns[i]);
+			if (room.memory.objects.spawns) {
+				const roomSpawnObjects = room.memory.objects.spawns;
+				if (roomSpawnObjects.length > 0) {
+					for (let i = 0; i < roomSpawnObjects.length; i++) {
+						const thisSpawn = Game.getObjectById(room.memory.objects.spawns[i]);
 
-					if (thisSpawn.spawning) continue;
-					else readySpawn = thisSpawn;
+						if (thisSpawn) {
+							if (thisSpawn.spawning) continue;
+						
+							readySpawn = thisSpawn;
+						}
+					}
 				}
 			}
-			if (room.memory.objects.spawns.length > 0) {
+			if (room.memory.objects.spawns.length > 0 && readySpawn) {
 				if (Game.creeps.length == 0 && room.energyAvailable <= 300 && (!room.memory.objects.storage || room.storage.store[RESOURCE_ENERGY] < 500)) {
 					newName = colonyName + '_Rb' + rebooterCount;
 					while (readySpawn.spawnCreep([WORK, WORK, MOVE, CARRY], newName, { memory: { role: 'rebooter', roleForQuota: 'rebooter' } }) == ERR_NAME_EXISTS) {
@@ -720,7 +757,6 @@ module.exports.loop = function () {
 				} else {
 					if ((harvesters.length < harvesterTarget) || (harvesters.length <= harvesterTarget && harvesterDying && harvesterTarget !== 0)) {
 						newName = colonyName + '_H' + harvesterCount;
-						const result = readySpawn.spawnCreep(availableVariants.harvester, newName, { memory: { role: 'harvester', roleForQuota: 'harvester', homeRoom: roomName } })
 						while (readySpawn.spawnCreep(availableVariants.harvester, newName, { memory: { role: 'harvester', roleForQuota: 'harvester', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 							harvesterCount++;
 							newName = colonyName + '_H' + harvesterCount;
@@ -772,7 +808,7 @@ module.exports.loop = function () {
 							}
 						} else if (miners.length < minerTarget && room.memory.objects.extractor) {
 							newName = colonyName + '_M' + minerCount;
-							while (readySpawn.spawnCreep([WORK, WORK, WORK, WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE], newName, { memory: { role: 'miner', roleForQuota: 'miner', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
+							while (readySpawn.spawnCreep(availableVariants.miner, newName, { memory: { role: 'miner', roleForQuota: 'miner', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 								minerCount++;
 								newName = colonyName + '_M' + minerCount;
 							}
@@ -843,6 +879,30 @@ module.exports.loop = function () {
 								while (readySpawn.spawnCreep([MOVE, MOVE, MOVE, MOVE, MOVE], newName, { memory: { role: 'scout', roleForQuota: 'scout', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
 									scoutCount++;
 									newName = colonyName + '_Sct' + scoutCount;
+								}
+							} else if (claimers.length < claimerTarget) {
+								newName = colonyName + '_Clm' + claimerCount;
+								while (readySpawn.spawnCreep([MOVE, CLAIM], newName, { memory: { role: 'claimer', roleForQuota: 'claimer', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
+									claimerCount++;
+									newName = colonyName + '_Clm' + claimerCount;
+								}
+							} else if (providers.length < providerTarget) {
+								newName = colonyName + '_Prv' + providerCount;
+								while (readySpawn.spawnCreep(availableVariants.provider, newName, { memory: { role: 'provider', roleForQuota: 'provider', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
+									providerCount++;
+									newName = colonyName + '_Prv' + providerCount;
+								}
+							} else if (invaders.length < invaderTarget) {
+								newName = colonyName + '_Inv' + invaderCount;
+								while (readySpawn.spawnCreep(availableVariants.invader, newName, { memory: { role: 'invader', roleForQuota: 'invader', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
+									invaderCount++;
+									newName = colonyName + '_Inv' + invaderCount;
+								}
+							} else if (ponies.length < ponyTarget) {
+								newName = colonyName + '_Pny' + ponyCount;
+								while (readySpawn.spawnCreep(availableVariants.pony, newName, { memory: { role: 'pony', roleForQuota: 'pony', homeRoom: roomName } }) == ERR_NAME_EXISTS) {
+									ponyCount++;
+									newName = colonyName + '_Pny' + ponyCount;
 								}
 							}
 						}

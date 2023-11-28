@@ -227,7 +227,9 @@ global.visualRCProgress = function (controllerID) {
 	let hours = Math.floor(secondsRemaining % (3600 * 24) / 3600);
 	let minutes = Math.floor(secondsRemaining % 3600 / 60);
 	let seconds = Math.floor(secondsRemaining % 60);
-	const alignment = cont.room.memory.settings.visualSettings.progressInfo.alignemnt;
+
+	if (!cont.room.memory.settings.visualSettings.progressInfo) cont.room.initSettings();
+	const alignment = cont.room.memory.settings.visualSettings.progressInfo.alignment;
 	const fontSize = cont.room.memory.settings.visualSettings.progressInfo.fontSize;
 	const stroke = cont.room.memory.settings.visualSettings.progressInfo.stroke;
 	const xOffset = cont.room.memory.settings.visualSettings.progressInfo.xOffset;
@@ -649,4 +651,9 @@ global.pushWaypoints = function (creepName, waypoints) {
 			return newRallyPoints
 		}
 	}
+}
+
+global.setTickTimer = function (numTicks) {
+	
+
 }

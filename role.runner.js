@@ -26,7 +26,7 @@ const roleRunner = {
 				if (cMem.cargo === undefined) cMem.cargo = 'energy';
 				if (cMem.dropoff == 'none') if (room.storage) cMem.dropoff = room.storage.id;
 
-				if (creep.store[RESOURCE_ENERGY] == 0 || creep.store[cMem.cargo] == 0) {
+				if (creep.store.getUsedCapacity() == 0) {
 					if (cMem.pickup == 'none') {
 						let piles = creep.room.find(FIND_DROPPED_RESOURCES);
 						piles = piles.sort((a, b) => b.amount - a.amount);
@@ -38,14 +38,24 @@ const roleRunner = {
 					} else {
 						const target = Game.getObjectById(cMem.pickup);
 						if (target) {
-							if (creep.withdraw(target, cMem.cargo) == ERR_NOT_IN_RANGE) creep.moveTo(target, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted' } });
+							if (pos.isNearTo(target)) {
+								const lootTypes = Object.keys(target.store);
+								if (creep.store.getFreeCapacity() > 0 && target.store.getUsedCapacity() > 0) {
+									creep.withdraw(target, lootTypes[i]);
+									return;
+								}
+							} else {
+								creep.moveTo(target, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+							}
 						}
 					}
 				} else {
 					const target = Game.getObjectById(cMem.dropoff);
 					if (target) {
 						if (pos.isNearTo(target)) {
-							if (target.store.getFreeCapacity(RESOURCE_ENERGY) > 0) creep.transfer(target, RESOURCE_ENERGY);
+							const lootTypes = Object.keys(creep.store);
+							creep.transfer(target, lootTypes[0]);
+							return;
 						}
 						else {
 							if (creep.getActiveBodyparts(WORK) > 0) {
@@ -54,7 +64,7 @@ const roleRunner = {
 								if (roadUnderCreep.length > 0) creep.repair(roadUnderCreep[0]);
 								else creep.moveTo(target, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 							}
-							else creep.moveTo(target, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
+							creep.moveTo(target, { visualizePathStyle: { stroke: '#880088', opacity: 0.3, lineStyle: 'dotted', ignoreCreeps: true } });
 						}
 					}
 				}

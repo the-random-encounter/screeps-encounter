@@ -134,13 +134,15 @@ const roleCollector = {
 									const outboxIDs = rMem.settings.containerSettings.outboxes;
 									let outboxes = [];
 
-									for (let i = 0; i < outboxIDs.length; i++) {
-										const outboxObj = Game.getObjectById(outboxIDs[i]);
-										outboxes.push(outboxObj);
-									}
+									if (outboxIDs.length > 0) {
+										for (let i = 0; i < outboxIDs.length; i++) {
+											const outboxObj = Game.getObjectById(outboxIDs[i]);
+											outboxes.push(outboxObj);
+										}
 
-									outboxes = outboxes.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
-									cMem.pickup = outboxes[0].id;
+										outboxes = outboxes.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
+										cMem.pickup = outboxes[0].id;
+									}
 								}
 								
 								const target = Game.getObjectById(cMem.pickup)

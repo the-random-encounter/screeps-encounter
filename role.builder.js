@@ -63,13 +63,13 @@ const roleBuilder = {
                   const boxObj = Game.getObjectById(outboxes[i]);
                   boxes.push(boxObj);
                 }
-                
+
                 if (boxes.length > 1)
                   boxes.sort((a, b) => b.store[RESOURCE_ENERGY] - a.store[RESOURCE_ENERGY]);
 
-                let closestBox = boxes[0];
+                const fullestBox = boxes[0];
               
-                if (creep.withdraw(closestBox, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(closestBox, { visualizePathStyle: { stroke: '#0000ff', opacity: 0.3, lineStyle: 'dotted' } })
+                if (creep.withdraw(fullestBox, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.moveTo(fullestBox, { visualizePathStyle: { stroke: '#0000ff', opacity: 0.3, lineStyle: 'dotted' } })
               } else {
                     
                 let droppedPiles = room.find(FIND_DROPPED_RESOURCES);
